@@ -1,0 +1,7 @@
+/**/.DS_Store
+/.gradle
+.swp
+build
+/out
+/debug
+hs_err_*.log
