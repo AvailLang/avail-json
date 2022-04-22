@@ -29,7 +29,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     java
     kotlin("jvm") version "1.6.20"
@@ -107,6 +107,35 @@ fun checkCredentials ()
 ///////////////////////////////////////////////////////////////////////////////
 
 tasks {
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        sourceCompatibility = jvmTargetString
+        targetCompatibility = jvmTargetString
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = jvmTargetString
+            freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
+            languageVersion = kotlinLanguage
+        }
+    }
+    withType<Test> {
+        val toolChains =
+            project.extensions.getByType(JavaToolchainService::class)
+        javaLauncher.set(
+            toolChains.launcherFor {
+                languageVersion.set(JavaLanguageVersion.of(jvmTarget))
+            })
+        testLogging {
+            events = setOf(org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED)
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+    }
+
     val sourceJar by creating(Jar::class) {
         description = "Creates sources JAR."
         dependsOn(JavaPlugin.CLASSES_TASK_NAME)
@@ -134,7 +163,7 @@ publishing {
     repositories {
         maven {
             name = "GitHub"
-            url = uri("https://maven.pkg.github.com/AvailLang/Avail")
+            url = uri("") // TODO
             credentials {
                 username = githubUsername
                 password = githubPassword
