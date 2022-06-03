@@ -1,6 +1,6 @@
 /*
  * JSONWriterTest.kt
- * Copyright © 1993-2021, The Avail Foundation, LLC.
+ * Copyright © 1993-2022, The Avail Foundation, LLC.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,10 @@
 
 package org.availlang.json.test
 
+import org.availlang.json.JSONException
+import org.availlang.json.JSONObject
+import org.availlang.json.JSONReader
+import org.availlang.json.JSONWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.addObjectToWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.addToWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.test
@@ -43,14 +47,10 @@ import org.availlang.json.test.TestJSONKeyValue.IMANINT
 import org.availlang.json.test.TestJSONKeyValue.IMANOBJECT
 import org.availlang.json.test.TestJSONKeyValue.IMANULL
 import org.availlang.json.test.TestJSONKeyValue.IMASTRING
+import org.availlang.json.test.TestJSONKeyValue.IMATERMINATEDSTRING
 import org.availlang.json.test.TestJSONKeyValue.IMATRUE
 import org.availlang.json.test.TestJSONKeyValue.OBJINT
 import org.availlang.json.test.TestJSONKeyValue.OBJSTRING
-import org.availlang.json.JSONException
-import org.availlang.json.JSONObject
-import org.availlang.json.JSONReader
-import org.availlang.json.JSONWriter
-import org.availlang.json.test.TestJSONKeyValue.IMATERMINATEDSTRING
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
@@ -155,24 +155,4 @@ class JSONWriterTest
 		assertThrows(IllegalStateException::class.java) { writer.endArray() }
 		displayTestPayload(writer, false)
 	}
-
-	// TODO the following should fail but don't; need to investigate.
-	//	@Test
-	//	@DisplayName("Test Failure: Open an array as first write")
-	//	void inappropriateOpenArray ()
-	//	{
-	//		final JSONWriter writer = new JSONWriter();
-	//		assertThrows(IllegalStateException.class, writer::startArray);
-	//		displayTestPayload(writer);
-	//	}
-	//
-	//	@Test
-	//	@DisplayName("Test Failure: Attempt to write data without starting object")
-	//	void noInitialObjectStart ()
-	//	{
-	//		final JSONWriter writer = new JSONWriter();
-	//		assertThrows(
-	//			IllegalStateException.class, () -> writer.write("foo"));
-	//		displayTestPayload(writer);
-	//	}
 }

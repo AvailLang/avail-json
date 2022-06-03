@@ -1,6 +1,6 @@
 /*
  * TestJSONKeyValue.kt
- * Copyright © 1993-2021, The Avail Foundation, LLC.
+ * Copyright © 1993-2022, The Avail Foundation, LLC.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * A `TestJSONKeyValue` is an enum used for creating static test data for
- * testing JSON utility functionality in Avail.
+ * testing JSON utility functionality.
  *
  * @author Richard Arriaga &lt;rich@availlang.org&gt;
  *

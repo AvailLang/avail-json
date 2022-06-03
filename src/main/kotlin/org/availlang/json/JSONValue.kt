@@ -1,6 +1,6 @@
 /*
  * JSONValue.kt
- * Copyright © 1993-2021, The Avail Foundation, LLC.
+ * Copyright © 1993-2022, The Avail Foundation, LLC.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ class JSONValue : JSONData
 	 * @throws ClassCastException
 	 *   If the value is not a `Boolean`.
 	 */
-	val boolean: Boolean
+	override val boolean: Boolean
 		@Throws(ClassCastException::class)
 		get() = value as Boolean
 
@@ -69,7 +69,7 @@ class JSONValue : JSONData
 	 * @throws ClassCastException
 	 *   If the value is not a `String`.
 	 */
-	val string: String
+	override val string: String
 		@Throws(ClassCastException::class)
 		get() = value as String
 

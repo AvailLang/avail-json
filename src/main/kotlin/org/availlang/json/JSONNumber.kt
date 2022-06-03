@@ -1,6 +1,6 @@
 /*
  * JSONNumber.kt
- * Copyright © 1993-2021, The Avail Foundation, LLC.
+ * Copyright © 1993-2022, The Avail Foundation, LLC.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,15 +39,21 @@ import java.math.BigInteger
  * A `JSONNumber` is a JSON number. It provides convenience methods for
  * extracting numeric values in different formats.
  *
+ * @constructor
+ * Construct an instance based on a [BigDecimal].
+ *
+ * @property bigDecimal
+ *   The [BigDecimal] that encodes this value.
+ *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
  */
 @Suppress("unused")
-class JSONNumber : JSONData
-{
-	/** The [BigDecimal] that encodes the value. */
+class JSONNumber
+constructor(
 	@Suppress("MemberVisibilityCanBePrivate")
-	val bigDecimal: BigDecimal
-
+	override val bigDecimal: BigDecimal
+): JSONData()
+{
 	override val isNumber: Boolean
 		get() = true
 
@@ -59,7 +65,7 @@ class JSONNumber : JSONData
 	 * @throws ArithmeticException
 	 *   If the fractional part of the value is nonzero.
 	 */
-	val bigInteger: BigInteger
+	override val bigInteger: BigInteger
 		@Throws(ArithmeticException::class)
 		get() = bigDecimal.toBigIntegerExact()
 
@@ -71,7 +77,7 @@ class JSONNumber : JSONData
 	 * @throws ArithmeticException
 	 *   If the fractional part of the value is nonzero.
 	 */
-	val int: Int
+	override val int: Int
 		@Throws(ArithmeticException::class)
 		get() = bigDecimal.intValueExact()
 
@@ -81,9 +87,10 @@ class JSONNumber : JSONData
 	 * @return
 	 *   A `Long`.
 	 * @throws ArithmeticException
-	 *   If the fractional part of the value is nonzero.
+	 *   If the fractional part of the value is nonzero, or if it exceeds the
+	 *   range of a [Long].
 	 */
-	val long: Long
+	override val long: Long
 		@Throws(ArithmeticException::class)
 		get() = bigDecimal.longValueExact()
 
@@ -95,7 +102,7 @@ class JSONNumber : JSONData
 	 *   [Float.NEGATIVE_INFINITY] if the internal value exceeds the
 	 *   representational limitations of `Float`.
 	 */
-	val float: Float
+	override val float: Float
 		get() = bigDecimal.toFloat()
 
 	/**
@@ -106,19 +113,8 @@ class JSONNumber : JSONData
 	 *   [Double.NEGATIVE_INFINITY] if the internal value exceeds the
 	 *   representational limitations of `Float`.
 	 */
-	val double: Double
+	override val double: Double
 		get() = bigDecimal.toDouble()
-
-	/**
-	 * Construct a new [JSONNumber].
-	 *
-	 * @param value
-	 *   The [BigDecimal] that encodes the value.
-	 */
-	constructor(value: BigDecimal)
-	{
-		this.bigDecimal = value
-	}
 
 	/**
 	 * Construct a new [JSONNumber].
@@ -126,10 +122,7 @@ class JSONNumber : JSONData
 	 * @param value
 	 *   The `Long` that encodes the value.
 	 */
-	constructor(value: Long)
-	{
-		this.bigDecimal = BigDecimal(value)
-	}
+	constructor(value: Long) : this(BigDecimal(value))
 
 	/**
 	 * Construct a new [JSONNumber].
@@ -137,10 +130,7 @@ class JSONNumber : JSONData
 	 * @param value
 	 *   The [Int] that encodes the value.
 	 */
-	constructor(value: Int)
-	{
-		this.bigDecimal = BigDecimal(value)
-	}
+	constructor(value: Int) : this(BigDecimal(value))
 
 	/**
 	 * Construct a new [JSONNumber].
@@ -148,10 +138,7 @@ class JSONNumber : JSONData
 	 * @param value
 	 *   The `Double` that encodes the value.
 	 */
-	constructor(value: Double)
-	{
-		this.bigDecimal = BigDecimal(value)
-	}
+	constructor(value: Double) : this(BigDecimal(value))
 
 	/**
 	 * Construct a new [JSONNumber].
@@ -159,10 +146,7 @@ class JSONNumber : JSONData
 	 * @param value
 	 *   The `Float` that encodes the value.
 	 */
-	constructor(value: Float)
-	{
-		this.bigDecimal = BigDecimal(value.toDouble())
-	}
+	constructor(value: Float) : this(BigDecimal(value.toDouble()))
 
 	override fun writeTo(writer: JSONWriter)
 	{
