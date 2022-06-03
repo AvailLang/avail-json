@@ -72,18 +72,17 @@ import org.availlang.json.JSONWriter
 var verbose = false
 var logLevel = 0
 
-fun writeConfiguration(writer: JSONWriter) =
-	writer.run {
-		// Write a complete JSON object, whose properties are defined by the
-		// block. `writer` is an implied receiver within the block.
-		writeObject {
-			// Write a string value at the key "verbose".
-			at("verbose") { write(verbose) }
-			// Write an int value at the key "logLevel".
-			at("logLevel") { write(logLevel) }
-		}
-		toString()
+fun writeConfiguration(writer: JSONWriter) = writer.run {
+	// Write a complete JSON object, whose properties are defined by the
+	// block. `writer` is an implied receiver within the block.
+	writeObject {
+		// Write a string value at the key "verbose".
+		at("verbose") { write(verbose) }
+		// Write an int value at the key "logLevel".
+		at("logLevel") { write(logLevel) }
 	}
+	toString()
+}
 
 // Write configuration data.
 val writer = JSONWriter()
@@ -107,9 +106,9 @@ var verbose = true
 
 fun readConfiguration(document: JSONData)
 {
-    // The document is really a JSONObject. Read the fields, in any order you
-    // like; here, it just so happens to be the opposite order from which they
-    // were written.
+	// The document is really a JSONObject. Read the fields, in any order you
+	// like; here, it just so happens to be the opposite order from which they
+	// were written.
 	document as JSONObject
 	logLevel = document["logLevel"].int
 	verbose = document["verbose"].boolean
@@ -119,7 +118,7 @@ fun readConfiguration(document: JSONData)
 val json = """{"verbose":false,"logLevel":0}"""
 val document = JSONReader(json.reader()).read()
 readConfiguration(document)
-assert(loglLevel == 0)
+assert(logLevel == 0)
 assert(verbose)
 ```
 
