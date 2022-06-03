@@ -1,6 +1,6 @@
 /*
  * JSONArray.kt
- * Copyright © 1993-2021, The Avail Foundation, LLC.
+ * Copyright © 1993-2022, The Avail Foundation, LLC.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,9 @@
  */
 
 package org.availlang.json
+
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * A `JSONArray` is produced by a [JSONReader] when an array is
@@ -149,6 +152,66 @@ class JSONArray internal constructor(
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
 	fun getObject(index: Int): JSONObject = array[index] as JSONObject
+
+	/**
+	 * Extract a [List] of [BigDecimal], throwing a [ClassCastException] if any
+	 * elements are non-numeric.
+	 */
+	val bigDecimals get() = array.map(JSONData::bigDecimal)
+
+	/**
+	 * Extract a [List] of [BigInteger], throwing a [ClassCastException] if any
+	 * elements are non-numeric, or an [ArithmeticException] if any elements
+	 * are non-integral.  The first element to fail determines which exception
+	 * is thrown.
+	 */
+	val bigIntegers
+		@Throws(ArithmeticException::class)
+		get() = array.map(JSONData::bigInteger)
+
+	/**
+	 * Extract a [List] of [Int]s, throwing a [ClassCastException] if any
+	 * elements are non-numeric, or an [ArithmeticException] if any elements are
+	 * non-integral or overflow an [Int].  The first element to fail determines
+	 * which exception is thrown.
+	 */
+	val ints
+		@Throws(ArithmeticException::class)
+		get() = array.map(JSONData::int)
+
+	/**
+	 * Extract a [List] of [Long]s, throwing a [ClassCastException] if any
+	 * elements are non-numeric, or an [ArithmeticException] if any elements are
+	 * non-integral or overflow a [Long].  The first element to fail determines
+	 * which exception is thrown.
+	 */
+	val longs
+		@Throws(ArithmeticException::class)
+		get() = array.map(JSONData::long)
+
+	/**
+	 * Extract a [List] of [Float]s, throwing a [ClassCastException] if any
+	 * elements are non-numeric.
+	 */
+	val floats get() = array.map(JSONData::float)
+
+	/**
+	 * Extract a [List] of [Double]s, throwing a [ClassCastException] if any
+	 * elements are non-numeric.
+	 */
+	val doubles get() = array.map(JSONData::double)
+
+	/**
+	 * Extract a [List] of [String]s, throwing a [ClassCastException] if any
+	 * element is not a string.
+	 */
+	val strings get() = array.map(JSONData::string)
+
+	/**
+	 * Extract a [List] of [Boolean]s, throwing a [ClassCastException] if any
+	 * element is not a boolean.
+	 */
+	val booleans get() = array.map(JSONData::boolean)
 
 	override fun iterator(): ListIterator<JSONData> =
 		listOf(*array).listIterator()
