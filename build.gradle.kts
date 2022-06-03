@@ -30,11 +30,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
+
 plugins {
     java
     kotlin("jvm") version "1.6.20"
     `maven-publish`
     publishing
+    signing
+    id("org.jetbrains.dokka") version "1.6.21"
 }
 
 val junitVersion = "5.8.2"
@@ -56,8 +60,11 @@ kotlin {
 }
 
 group = "org.availlang"
-version = "1.0.7"
+version = "1.0.8-SNAPSHOT"
 description = "A flexible JSON building and reading utility"
+
+val isReleaseVersion =
+    !version.toString().toUpperCaseAsciiOnly().endsWith("SNAPSHOT")
 
 repositories {
     mavenCentral()
@@ -73,32 +80,22 @@ dependencies {
 ///////////////////////////////////////////////////////////////////////////////
 //                       Publish Utilities
 ///////////////////////////////////////////////////////////////////////////////
-val githubUsername: String get() =
-    System.getenv("GITHUB_USER") ?: ""
-val githubPassword: String get() =
-    System.getenv("GITHUB_TOKEN") ?: ""
-
+val ossrhUsername: String get() =
+    System.getenv("OSSRH_USER") ?: ""
+val ossrhPassword: String get() =
+    System.getenv("OSSRH_PASSWORD") ?: ""
 
 private val credentialsWarning =
-    "Missing credentials.  To publish, you'll need to create a GitHub " +
-        "token:\n" +
-        (
-            "https://help.github.com/en/actions/" +
-                "configuring-and-managing-workflows/" +
-                "authenticating-with-the-github_token") +
-        "\n" +
-        "Then set GITHUB_USER and GITHUB_TOKEN variables to hold your github " +
-        "username and the (generated hexadecimal) token, respectively, in " +
-        "~/.bash_profile or other appropriate login script." +
-        "\n" +
-        "Remember to restart IntelliJ after this change."
+    "Missing OSSRH credentials.  To publish, you'll need to create an OSSHR " +
+        "JIRA account. Then ensure the user name, and password are available " +
+        "as the environment variables: 'OSSRH_USER' and 'OSSRH_PASSWORD'"
 
 /**
  * Check that the publish task has access to the necessary credentials.
  */
 fun checkCredentials ()
 {
-    if (githubUsername.isEmpty() || githubPassword.isEmpty())
+    if (ossrhUsername.isEmpty() || ossrhPassword.isEmpty())
     {
         System.err.println(credentialsWarning)
     }
@@ -136,11 +133,22 @@ tasks {
         }
     }
 
-    val sourceJar by creating(Jar::class) {
+    val sourceJar by creating(Jar::class)
+    {
         description = "Creates sources JAR."
         dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+    }
+    val dokkaHtml by getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+
+    val javadocJar by creating(Jar::class)
+    {
+        dependsOn(dokkaHtml)
+        description = "Creates Javadoc JAR."
+        dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+        archiveClassifier.set("javadoc")
+        from(dokkaHtml.outputDirectory)
     }
 
     jar {
@@ -154,28 +162,84 @@ tasks {
         }
     }
 
-    artifacts { add("archives", sourceJar) }
+    artifacts {
+        add("archives", sourceJar)
+        add("archives", javadocJar)
+    }
     publish { checkCredentials() }
 }
 
-// TODO Update publish details when project is independent.
+signing {
+    useGpgCmd()
+    sign(configurations.archives.get())
+}
+
 publishing {
     repositories {
         maven {
-            name = "GitHub"
-            url = uri("") // TODO
+            url = if (isReleaseVersion)
+            {
+                // Release version
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            }
+            else
+            {
+                // Snapshot
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            }
+            println("Publishing snapshot: $isReleaseVersion")
+            println("Publishing URL: $url")
             credentials {
-                username = githubUsername
-                password = githubPassword
+                username = System.getenv("OSSRH_USER")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
 
     publications {
+
         create<MavenPublication>("avail-json") {
+            pom {
+                groupId = project.group.toString()
+                name.set("Avail JSON")
+                packaging = "jar"
+                description.set("Read and write free-form JSON with precise error checking.")
+                url.set("https://www.availlang.org/")
+                licenses {
+                    license {
+                        name.set("BSD 3-Clause \"New\" or \"Revised\" License")
+                        url.set("https://github.com/AvailLang/avail-json/blob/main/LICENSE")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git@github.com:AvailLang/avail-json.git")
+                    developerConnection.set("scm:git:git@github.com:AvailLang/avail-json.git")
+                    url.set("https://github.com/AvailLang/avail-json")
+                }
+                developers {
+                    developer {
+                        id.set("toddATAvail")
+                        name.set("Todd Smith")
+                    }
+                    developer {
+                        id.set("richATAvail")
+                        name.set("Richard Arriaga")
+                    }
+                    developer {
+                        id.set("leslieATAvail")
+                        name.set("Leslie Schultz")
+                    }
+                    developer {
+                        id.set("markATAvail")
+                        name.set("Mark van Gulik")
+                    }
+                }
+            }
             val sourceJar = tasks.getByName("sourceJar") as Jar
+            val javadocJar = tasks.getByName("javadocJar") as Jar
             from(components["java"])
             artifact(sourceJar)
+            artifact(javadocJar)
         }
     }
 }
