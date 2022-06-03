@@ -38,6 +38,7 @@ plugins {
     `maven-publish`
     publishing
     signing
+    id("org.jetbrains.dokka") version "1.6.21"
 }
 
 val junitVersion = "5.8.2"
@@ -59,7 +60,7 @@ kotlin {
 }
 
 group = "org.availlang"
-version = "1.0.7-SNAPSHOT"
+version = "1.0.8-SNAPSHOT"
 description = "A flexible JSON building and reading utility"
 
 val isReleaseVersion =
@@ -139,13 +140,15 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
     }
+    val dokkaHtml by getting(org.jetbrains.dokka.gradle.DokkaTask::class)
 
     val javadocJar by creating(Jar::class)
     {
+        dependsOn(dokkaHtml)
         description = "Creates Javadoc JAR."
         dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         archiveClassifier.set("javadoc")
-        from(javadoc)
+        from(dokkaHtml.outputDirectory)
     }
 
     jar {
@@ -167,14 +170,8 @@ tasks {
 }
 
 signing {
-    // TODO make this work!
-    // TODO https://docs.gradle.org/current/userguide/signing_plugin.html
-    // TODO https://central.sonatype.org/publish/requirements/#sign-files-with-gpgpgp
-    val signingKeyId: String? by project
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-    sign(tasks["stuffZip"])
+    useGpgCmd()
+    sign(configurations.archives.get())
 }
 
 publishing {
@@ -190,6 +187,8 @@ publishing {
                 // Snapshot
                 uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
             }
+            println("Publishing snapshot: $isReleaseVersion")
+            println("Publishing URL: $url")
             credentials {
                 username = System.getenv("OSSRH_USER")
                 password = System.getenv("OSSRH_PASSWORD")
@@ -204,7 +203,7 @@ publishing {
                 groupId = project.group.toString()
                 name.set("Avail JSON")
                 packaging = "jar"
-                description.set("Read and write freeform JSON with precise error checking.")
+                description.set("Read and write free-form JSON with precise error checking.")
                 url.set("https://www.availlang.org/")
                 licenses {
                     license {
