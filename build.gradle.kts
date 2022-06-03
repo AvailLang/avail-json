@@ -60,7 +60,7 @@ kotlin {
 }
 
 group = "org.availlang"
-version = "1.0.8-SNAPSHOT"
+version = "1.1.0"
 description = "A flexible JSON building and reading utility"
 
 val isReleaseVersion =
@@ -166,12 +166,15 @@ tasks {
         add("archives", sourceJar)
         add("archives", javadocJar)
     }
-    publish { checkCredentials() }
+    publish {
+        checkCredentials()
+        dependsOn(build)
+    }
 }
 
 signing {
     useGpgCmd()
-    sign(configurations.archives.get())
+    sign(the<PublishingExtension>().publications)
 }
 
 publishing {
