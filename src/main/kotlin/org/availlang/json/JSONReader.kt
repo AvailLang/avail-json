@@ -58,7 +58,8 @@ import java.util.LinkedList
  *   If the reader does not support marking.
  */
 class JSONReader @Throws(IllegalArgumentException::class) constructor(
-	private val reader: Reader) : Closeable
+	private val reader: Reader
+) : Closeable
 {
 	init
 	{
@@ -478,7 +479,7 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 		{
 			-1 ->
 				// Handle an empty document.
-				data = JSONData.jsonNull
+				data = JSONNull
 			'-'.code, '0'.code, '1'.code, '2'.code, '3'.code,
 			'4'.code, '5'.code, '6'.code, '7'.code, '8'.code,
 			'9'.code ->
@@ -507,7 +508,7 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 				// Read a JSON value (true, false, or null).
 				if (peekForKeyword("null"))
 				{
-					data = JSONData.jsonNull
+					data = JSONNull
 				}
 				else
 				{

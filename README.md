@@ -1,198 +1,195 @@
 Avail JSON
-===============================================================================
+================================================================================
 
-This is a utility for creating arbitrary JSON. It provides a JSON builder that 
-is like a `StringBuilder` that contains a JSON state machine. It produces JSON 
-documents that adhere to [ECMA 404: "The JSON Data Interchange Format"](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+API for procedural reading and writing of JSON data, decoupled from 
+source-level object representations to maximize developer freedom. 
 
-## JSONFriendly
-`JSONFriendly` is an interface that indicates an object has capability to be 
-written to a [JSONWriter](#JSONWriter) through the function:
+JSON construction is driven by the [builder pattern](https://en.wikipedia.org/wiki/Builder_pattern), 
+rather than an object mapping supplied through, e.g., annotations. Freeform 
+writing support is provided via [JSONWriter](#JSONWriter), which provides 
+precise errors and fast failures. Serialization support is provided via the
+[JSONFriendly](#JSONFriendly) interface; deserialization support is provided
+via the `JSONData` hierarchy, and easily integrated through implementation of 
+a constructor accepting a `JSONData` instance. 
 
-```kotlin
-/**
-	 * Emit a JSON representation of the [receiver][JSONFriendly] onto the
-	 * specified [writer][JSONWriter].
-	 *
-	 * @param writer
-	 *   A [JSONWriter].
-	 */
-	fun writeTo(writer: JSONWriter)
-```
+Supports [ECMA 404: "The JSON Data Interchange Format"](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+Supports Kotlin/JVM on JVM ≥11, using interoperability features, e.g., `@Throws`
+annotations, for clean integration with Java. Does not support Kotlin/JS or
+Kotlin/Native.
+
+# Key Types
 
 ## JSONWriter
-The `JSONWriter` is the writer used to build JSON. It uses a `java.io.Writer` to
-build the JSON. By default, the `JSONWriter` uses a `StringWriter`. It uses a 
-state machine, `JSONState`, which represents the `JSONWriter`'s view of 
-what operations are legal based on what operations have become before.
+A `JSONWriter` builds JSON using an underlying `java.io.Writer`; unless a custom
+`Writer` is passed, it will use a `java.io.StringWriter`. The current state of
+the writer is managed using `JSONState`s, and the current state controls which
+subsequent operations are legal. If an illegal operation is attempted, an
+`IllegalStateException` is thrown.
 
+Pretty printing is available, but must be requested (via a constructor
+parameter).
 
 ## JSONReader
-The `JSONReader` is the reader used to parse and read JSON.
+A `JSONReader` parses a JSON string into a `JSONData` instance; this object can
+be queried for values using string keys.
 
-## Example
-The following is an example of a `JSONFriendly`. The example shows usage of both
-reading and writing JSON.
+## JSONData
+`JSONData` represents a single JSON datum, and provides _queries_ for
+determining type compliance, e.g., `isInt`, `isString`, and _extractors_ for
+obtaining demarshaled Kotlin values, e.g., `int`, `string`. Subclasses
+differentiate by type and role — `JSONNull` for the null value, `JSONValue` for
+booleans and strings, `JSONNumber` for numbers, `JSONArray` for arrays, and
+`JSONObject` for objects — and may provide additional behaviors. `JSONData` is a
+sealed hierarchy, for convenient use within `when` expressions.
+
+## JSONFriendly
+Classes that implement the `JSONFriendly` interface override the `writeTo`
+method to control their serialization to JSON, via calls to the supplied
+[JSONWriter](#JSONWriter):
 
 ```kotlin
-import java.io.StringReader
-import java.util.UUID
-
 /**
- * Sample [JSONFriendly].
+ * Emit a JSON representation of the JSONFriendly receiver onto the
+ * specified JSONWriter.
+ *
+ * @param writer
+ *   A JSONWriter.
  */
-class Baz: JSONFriendly
-{
-	/** Sample String */
-	val name: String
-	
-	/** Sample Int */
-	val id: Int
+fun writeTo(writer: JSONWriter)
+```
 
-	override fun writeTo(writer: JSONWriter)
-	{
-		// Indicate starting a new JSON Object
-		writer.startObject()
-		
-		// Write a String value
-		writer.at("name") { write(name) }
-		
-		// Write an int value
-		writer.at("id") { write(id) }
-		
-		// Indicate ending the JSON Object opened at the start of this function
-		writer.endObject()
+# Examples
+
+## Freeform JSON Writing
+
+The following example shows freeform writing, using application configuration
+as the theme:
+
+```kotlin
+import org.availlang.json.JSONWriter
+
+// Fictional configuration state.
+var verbose = false
+var logLevel = 0
+
+fun writeConfiguration(writer: JSONWriter) = writer.run {
+	// Write a complete JSON object, whose properties are defined by the
+	// block. `writer` is an implied receiver within the block.
+	writeObject {
+		// Write a string value at the key "verbose".
+		at("verbose") { write(verbose) }
+		// Write an int value at the key "logLevel".
+		at("logLevel") { write(logLevel) }
 	}
-
-	/**
-	 * Basic constructor
-	 */
-	constructor(name: String, id: Int)
-	{
-		this.name = name
-		this.id = id
-	}
-
-	/**
-	 * Constructor using a raw JSON payload as a String. Use a [JSONReader] to 
-	 * construct a [JSONObject] from which the JSON-serialized data can be read
-	 * from.
-	 */
-	constructor(rawJSONString: String): this(
-		JSONReader(StringReader(rawJSONString)).read() as JSONObject?
-			?: error("Not a proper JSON Object!"))
-
-	/**
-	 * Constructor using a [JSONObject]. It expects the JSON object takes the
-	 * form that was created in the [writeTo] implementation.
-	 */
-	constructor(jsonObj: JSONObject)
-	{
-		this.name = jsonObj.getString("name")
-		this.id = jsonObj.getNumber("id").int
-	}
+	toString()
 }
 
-/**
- * A `Foo` is an example of [JSONFriendly].
- *
- * @author Richard Arriaga &lt;rich@availlang.org&gt;
- */
-class Foo: JSONFriendly
+// Write configuration data.
+val writer = JSONWriter()
+val document = writeConfiguration(writer)
+assert(document == """{"verbose":false,"logLevel":0}""")
+```
+
+## Freeform JSON Reading
+
+The following example shows freeform reading, using application configuration
+as the theme:
+
+```kotlin
+import org.availlang.json.JSONData
+import org.availlang.json.JSONObject
+import org.availlang.json.JSONReader
+
+// Fictional configuration state.
+var logLevel = 5
+var verbose = true
+
+fun readConfiguration(document: JSONData)
 {
-	/** A Sample Int */
-	val myInt: Int
+	// The document is really a JSONObject. Read the fields, in any order you
+	// like; here, it just so happens to be the opposite order from which they
+	// were written.
+	document as JSONObject
+	logLevel = document["logLevel"].int
+	verbose = document["verbose"].boolean
+}
 
-	/** A Sample Double */
-	val myDouble: Double
+// Read configuration data from the JSON string.
+val json = """{"verbose":false,"logLevel":0}"""
+val document = JSONReader(json.reader()).read()
+readConfiguration(document)
+assert(logLevel == 0)
+assert(verbose)
+```
 
-	/** A Sample String */
-	val myString: String?
+## Serialization
+The following example shows serialization, using a simple user model as the
+theme:
 
-	/** A Sample UUID */
-	val myUUID: UUID
+```kotlin
+import org.availlang.json.JSONArray
+import org.availlang.json.JSONFriendly
+import org.availlang.json.JSONObject
+import org.availlang.json.JSONReader
+import org.availlang.json.JSONWriter
+import java.util.UUID
+import java.util.UUID.fromString as uuid
 
-	/** A Sample Boolean */
-	val myBoolean: Boolean
+@Suppress("MemberVisibilityCanBePrivate")
+class User(
+	val id: UUID,
+	val fullName: String,
+	val preferredName: String,
+	val isActive: Boolean,
+	val ageAtSignup: Int,
+	val securityRules: List<String>
+): JSONFriendly
+{
+	// Deserialize a User from the supplied JSONObject.
+	//
+	// Note that not all keys match field names. This is perfectly okay,
+	// as this is a freeform JSON library! You just need to use the
+	// same keys when writing and reading, of course!
+	constructor(data: JSONObject): this(
+		id = uuid(data["id"].string),
+		fullName = data["fullName"].string,
+		preferredName = data["preferredName"].string,
+		isActive = data["active"].boolean,
+		ageAtSignup = data["age"].int,
+		securityRules = (data["rules"] as JSONArray).strings
+	)
 
-	/** A Sample [JSONFriendly] [Baz] */
-	val myBaz: Baz
-
-	/** A Sample List of Longs */
-	val myLongs: List<Long>
-	
-	override fun writeTo(writer: JSONWriter)
-	{
-		writer.apply {
-			// Indicate starting a new JSON Object
-			startObject()
-			at("myString") {
-				if (myString == null) writeNull()
-				else write(myString)
-			}
-			at("myDouble") { write(myDouble) }
-			at("myBoolean") { write(myBoolean) }
-			at("myUUID") { write(myUUID.toString()) }
-			at("myBaz") { myBaz.writeTo(this) }
-			at("myLongs") {
-				// Indicate an array is starting
-				startArray()
-				myLongs.forEach { write(it) }
-				// Indicate the array is ending
-				endArray()
-			}
-			// Indicate ending the JSON Object opened at the start of this 
-			// function
-			endObject()
+	// Serialize the receiver to the specified JSONWriter. Overridden from
+	// JSONFriendly.
+	override fun writeTo(writer: JSONWriter) = writer.run {
+		// Pack all data into a JSON object.
+		writeObject {
+			// Write the fields. You can write them out in any order you like,
+			// however the order used in this function implementation is the
+			// order in which fields will appear in the final JSON string.
+			//
+			// Again, note that not all keys match field names, but they do
+			// (and must) align with the keys used by the constructor.
+			at("id") { write(id.toString()) }
+			at("fullName") { write(fullName) }
+			at("preferredName") { write(preferredName) }
+			at("active") { write(isActive) }
+			at("age") { write(ageAtSignup) }
+			at("rules") { writeStrings(securityRules) }
 		}
 	}
 
-	/**
-	 * Basic constructor
-	 */
-	constructor(
-		myInt: Int, 
-		myDouble: Double,
-		myString: String?,
-		myBoolean: Boolean,
-		myUUID: UUID,
-		myBaz: Baz,
-		myLongs: List<Long>)
+	companion object
 	{
-		this.myInt = myInt
-		this.myString = myString
-		this.myUUID = myUUID
-		this.myBoolean = myBoolean
-		this.myDouble = myDouble
-		this.myLongs = myLongs
-		this.myBaz = myBaz
-	}
-
-	/**
-	 * Constructor using a raw JSON payload as a String. Use a [JSONReader] to
-	 * construct a [JSONObject] from which the JSON-serialized data can be read
-	 * from.
-	 */
-	constructor(rawJSONString: String): this(
-		JSONReader(StringReader(rawJSONString)).read() as JSONObject?
-			?: error("Not a proper JSON Object!"))
-
-	/**
-	 * Constructor using a [JSONObject]. It expects the JSON object takes the
-	 * form that was created in the [writeTo] implementation.
-	 */
-	constructor(jsonObj: JSONObject)
-	{
-		this.myString = 
-			jsonObj["myString"].let { if (it.isNull) null else it.toString() }
-		this.myInt =  jsonObj.getNumber("myInt").int
-		this.myUUID = UUID.fromString(jsonObj.getString("myUUID"))
-		this.myBoolean = jsonObj.getBoolean("myBoolean")
-		this.myDouble = jsonObj.getNumber("myDouble").double
-		this.myBaz = Baz(jsonObj)
-		this.myLongs = 
-			jsonObj.getArray("myLongs").map { (it as JSONNumber).long }
-		
+		// Deserialize a JSON document comprising a single User.
+		fun deserialize(json: String): User
+		{
+			// Obtain a StringReader over the supplied JSON, then extract a
+			// JSONData that represents the whole JSON document. Cast it to
+			// JSONObject before the constructor call.
+			val data = JSONReader(json.reader()).read()
+			return User(data as JSONObject)
+		}
 	}
 }
 ```

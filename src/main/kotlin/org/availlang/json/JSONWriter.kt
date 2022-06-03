@@ -813,6 +813,7 @@ open class JSONWriter constructor(
 	 * @throws IllegalStateException
 	 *   If an arbitrary value cannot be written.
 	 */
+	@Suppress("MemberVisibilityCanBePrivate")
 	fun write(friendly: JSONFriendly)
 	{
 		friendly.writeTo(this)
@@ -1332,8 +1333,8 @@ open class JSONWriter constructor(
 		}
 		catch (e: Throwable)
 		{
-			// Do not allow an exception of any stripe to derail the
-			// stringification operation.
+			// Do not allow an exception to derail the stringification
+			// operation.
 			return String.format(
 				"BROKEN: %s <%s>: %s",
 				e.javaClass.name,

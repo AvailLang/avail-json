@@ -42,7 +42,7 @@ import kotlin.jvm.Throws
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
  */
-abstract class JSONData : JSONFriendly
+sealed class JSONData : JSONFriendly
 {
 	/**
 	 * Is the [receiver][JSONData] a JSON null?
@@ -154,19 +154,18 @@ abstract class JSONData : JSONFriendly
 	 * a string.
 	 */
 	open val string: String get() = throw ClassCastException()
+}
 
-	companion object
+/**
+ * The sole JSON null value.
+ */
+object JSONNull: JSONData()
+{
+	override val isNull: Boolean
+		get() = true
+
+	override fun writeTo(writer: JSONWriter)
 	{
-		/** The sole JSON `null`. */
-		val jsonNull = object : JSONData()
-		{
-			override val isNull: Boolean
-				get() = true
-
-			override fun writeTo(writer: JSONWriter)
-			{
-				writer.writeNull()
-			}
-		}
+		writer.writeNull()
 	}
 }
