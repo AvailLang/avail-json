@@ -89,75 +89,105 @@ class JSONObject internal constructor(
 	 *
 	 * @param k
 	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if k was not found.  If not present, a
+	 *   [NullPointerException] is thrown if k was not found.
 	 * @return
 	 *   The `Boolean` associated with requested key.
 	 * @throws NullPointerException
-	 *   If the requested key is not present.
+	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
 	 *   If the value associated with the requested key is not a [JSONValue].
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
-	fun getBoolean(k: String): Boolean = (get(k) as JSONValue).boolean
+	fun getBoolean(
+		k: String,
+		orElse: ()->Boolean = { throw NullPointerException() }
+	): Boolean = (map[k] as? JSONValue)?.boolean ?: run(orElse)
 
 	/**
 	 * Get a [JSONNumber] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if k was not found.  If not present, a
+	 *   [NullPointerException] is thrown if k was not found.
 	 * @return
 	 *   The `JSONNumber` associated with requested key.
 	 * @throws NullPointerException
-	 *   If the requested key is not present.
+	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
 	 *   If the value associated with the requested key is not a `JSONNumber`.
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
-	fun getNumber(k: String): JSONNumber = get(k) as JSONNumber
+	fun getNumber(
+		k: String,
+		orElse: ()->JSONNumber = { throw NullPointerException() }
+	): JSONNumber = (map[k] as? JSONNumber) ?: run(orElse)
 
 	/**
 	 * Get a [String] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if k was not found.  If not present, a
+	 *   [NullPointerException] is thrown if k was not found.
 	 * @return
 	 *   The `String` associated with requested key.
 	 * @throws NullPointerException
-	 *   If the requested key is not present.
+	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
 	 *   If the value associated with the requested key is not a [JSONValue].
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
-	fun getString(k: String): String = (get(k) as JSONValue).string
+	fun getString(
+		k: String,
+		orElse: ()->String = { throw NullPointerException() }
+	): String = (map[k] as? JSONValue)?.string ?: run(orElse)
 
 	/**
 	 * Get a [JSONArray] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if k was not found.  If not present, a
+	 *   [NullPointerException] is thrown if k was not found.
 	 * @return
 	 *   The `JSONArray` associated with requested key.
 	 * @throws NullPointerException
-	 *   If the requested key is not present.
+	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
 	 *   If the value associated with the requested key is not a `JSONArray`.
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
-	fun getArray(k: String): JSONArray = get(k) as JSONArray
+	fun getArray(
+		k: String,
+		orElse: () -> JSONArray = { throw NullPointerException() }
+	): JSONArray = (map[k] as? JSONArray) ?: run(orElse)
 
 	/**
 	 * Get a [JSONObject] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if k was not found.  If not present, a
+	 *   [NullPointerException] is thrown if k was not found.
 	 * @return
 	 *   The `JSONObject` associated with requested key.
 	 * @throws NullPointerException
-	 *   If the requested key is not present.
+	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
 	 *   If the value associated with the requested key is not a `JSONObject`.
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
-	fun getObject(k: String): JSONObject = get(k) as JSONObject
+	fun getObject(
+		k: String,
+		orElse: () -> JSONObject = { throw NullPointerException() }
+	): JSONObject = (map[k] as? JSONObject) ?: run(orElse)
 
 	override fun iterator(): Iterator<Entry<String, JSONData>> =
 		map.entries.iterator()

@@ -41,7 +41,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.6.21"
 }
 
-val junitVersion = "5.8.2"
+val junitVersion = "5.9.0"
 val jvmTarget = 11
 val jvmTargetString = jvmTarget.toString()
 val kotlinLanguage = "1.6"
@@ -60,7 +60,7 @@ kotlin {
 }
 
 group = "org.availlang"
-version = "1.1.1"
+version = "1.2.0"
 description = "A flexible JSON building and reading utility"
 
 val isReleaseVersion =
