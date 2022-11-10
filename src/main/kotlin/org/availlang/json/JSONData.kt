@@ -110,7 +110,7 @@ sealed class JSONData : JSONFriendly
 	 * part, throw an [ArithmeticException].
 	 */
 	open val bigInteger: BigInteger
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = throw ClassCastException()
 
 	/**
@@ -119,7 +119,7 @@ sealed class JSONData : JSONFriendly
 	 * part or is out of range, throw an [ArithmeticException].
 	 */
 	open val int: Int
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = throw ClassCastException()
 
 	/**
@@ -128,32 +128,40 @@ sealed class JSONData : JSONFriendly
 	 * part or is out of range, throw an [ArithmeticException].
 	 */
 	open val long: Long
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = throw ClassCastException()
 
 	/**
 	 * If this is a [JSONNumber], extract its value as a [Float], otherwise
 	 * throw a [ClassCastException].
 	 */
-	open val float: Float get() = throw ClassCastException()
+	open val float: Float
+		@Throws(ClassCastException::class)
+		get() = throw ClassCastException()
 
 	/**
 	 * If this is a [JSONNumber], extract its value as a [Double], otherwise
 	 * throw a [ClassCastException].
 	 */
-	open val double: Double get() = throw ClassCastException()
+	open val double: Double
+		@Throws(ClassCastException::class)
+		get() = throw ClassCastException()
 
 	/**
 	 * Extract a [Boolean], or throw a [ClassCastException] if the value is not
 	 * a boolean.
 	 */
-	open val boolean: Boolean get() = throw ClassCastException()
+	open val boolean: Boolean
+		@Throws(ClassCastException::class)
+		get() = throw ClassCastException()
 
 	/**
 	 * Extract a [String], or throw a [ClassCastException] if the value is not
 	 * a string.
 	 */
-	open val string: String get() = throw ClassCastException()
+	open val string: String
+		@Throws(ClassCastException::class)
+		get() = throw ClassCastException()
 }
 
 /**

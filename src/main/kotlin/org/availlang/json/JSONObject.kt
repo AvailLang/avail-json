@@ -30,12 +30,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package org.availlang.json
 
+import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.collections.Map.Entry
 
 /**
- * A `JSONObject` is produced by a [JSONReader] when an object is
+ * A [JSONObject] is produced by a [JSONReader] when an object is
  * read. Each key of the object is a [String] and each value is a [JSONData].
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
@@ -54,19 +58,19 @@ import kotlin.collections.Map.Entry
  *   caller afterward; this call transfers ownership of the reference.
  */
 class JSONObject internal constructor(
-	private val map: Map<String, JSONData>) : JSONData(),
-	Iterable<Entry<String, JSONData>>
+	private val map: Map<String, JSONData>
+) : JSONData(), Iterable<Entry<String, JSONData>>
 {
 	override val isObject: Boolean
 		get() = true
 
 	/**
-	 * Does the `JSONObject` include a binding for the specified key?
+	 * Does the [JSONObject] include a binding for the specified key?
 	 *
 	 * @param k
 	 *   The key.
 	 * @return
-	 *   `true` if the `JSONObject` includes a binding for the key, `false`
+	 *   `true` if the [JSONObject] includes a binding for the key, `false`
 	 *   otherwise.
 	 */
 	fun containsKey(k: String): Boolean = map.containsKey(k)
@@ -77,7 +81,7 @@ class JSONObject internal constructor(
 	 * @param k
 	 *   The key.
 	 * @return
-	 *   The `JSONData` associated with requested key.
+	 *   The [JSONData] associated with requested key.
 	 * @throws NullPointerException
 	 *   If the requested key is not present.
 	 */
@@ -85,15 +89,16 @@ class JSONObject internal constructor(
 		map[k] ?: throw NullPointerException()
 
 	/**
-	 * Get a `Boolean` associated with requested key.
+	 * Get a [Boolean] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
 	 * @param orElse
-	 *   An optional function to run if k was not found.  If not present, a
-	 *   [NullPointerException] is thrown if k was not found.
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
 	 * @return
-	 *   The `Boolean` associated with requested key.
+	 *   The [Boolean] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
 	 * @throws NullPointerException
 	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
@@ -106,19 +111,37 @@ class JSONObject internal constructor(
 	): Boolean = (map[k] as? JSONValue)?.boolean ?: run(orElse)
 
 	/**
+	 * Get a [Boolean] associated with requested key, or `null` if no such key
+	 * exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [Boolean] associated with requested key, or `null` if no such key
+	 *   exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [JSONValue].
+	 */
+	@Throws(ClassCastException::class)
+	fun getBooleanOrNull(
+		k: String
+	): Boolean? = (map[k] as? JSONValue)?.boolean
+	
+	/**
 	 * Get a [JSONNumber] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
 	 * @param orElse
-	 *   An optional function to run if k was not found.  If not present, a
-	 *   [NullPointerException] is thrown if k was not found.
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
 	 * @return
-	 *   The `JSONNumber` associated with requested key.
+	 *   The [JSONNumber] associated with requested key, or the result of
+	 *   applying [orElse] if [k] was not found.
 	 * @throws NullPointerException
 	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
-	 *   If the value associated with the requested key is not a `JSONNumber`.
+	 *   If the value associated with the requested key is not a [JSONNumber].
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getNumber(
@@ -127,15 +150,255 @@ class JSONObject internal constructor(
 	): JSONNumber = (map[k] as? JSONNumber) ?: run(orElse)
 
 	/**
+	 * Get a [JSONNumber] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [JSONNumber] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [JSONNumber].
+	 */
+	@Throws(ClassCastException::class)
+	fun getNumberOrNull(k: String): JSONNumber? = map[k] as? JSONNumber
+
+	/**
+	 * Get a [BigInteger] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [BigInteger] associated with requested key, or the result of
+	 *   applying [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [BigInteger].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getBigInteger(
+		k: String,
+		orElse: ()->BigInteger = { throw NullPointerException() }
+	): BigInteger = (map[k] as? JSONNumber)?.bigInteger ?: run(orElse)
+
+	/**
+	 * Get a [BigInteger] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [BigInteger] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [BigInteger].
+	 */
+	@Throws(ClassCastException::class)
+	fun getBigIntegerOrNull(k: String): BigInteger? =
+		(map[k] as? JSONNumber)?.bigInteger
+
+	/**
+	 * Get a [Long] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [Long] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Long].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getLong(
+		k: String,
+		orElse: ()->Long = { throw NullPointerException() }
+	): Long = (map[k] as? JSONNumber)?.long ?: run(orElse)
+
+	/**
+	 * Get a [Long] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [Long] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Long].
+	 */
+	@Throws(ClassCastException::class)
+	fun getLongOrNull(k: String): Long? = (map[k] as? JSONNumber)?.long
+
+	/**
+	 * Get a [Int] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [Int] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Int].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getInt(
+		k: String,
+		orElse: ()->Int = { throw NullPointerException() }
+	): Int = (map[k] as? JSONNumber)?.int ?: run(orElse)
+
+	/**
+	 * Get a [Int] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [Int] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Int].
+	 */
+	@Throws(ClassCastException::class)
+	fun getIntOrNull(k: String): Int? = (map[k] as? JSONNumber)?.int
+
+	/**
+	 * Get a [BigDecimal] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [BigDecimal] associated with requested key, or the result of
+	 *   applying [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [BigDecimal].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getBigDecimal(
+		k: String,
+		orElse: ()->BigDecimal = { throw NullPointerException() }
+	): BigDecimal = (map[k] as? JSONNumber)?.bigDecimal ?: run(orElse)
+
+	/**
+	 * Get a [BigDecimal] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [BigDecimal] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [BigDecimal].
+	 */
+	@Throws(ClassCastException::class)
+	fun getBigDecimalOrNull(k: String): BigDecimal? =
+		(map[k] as? JSONNumber)?.bigDecimal
+
+	/**
+	 * Get a [Double] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [Double] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Double].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getDouble(
+		k: String,
+		orElse: ()->Double = { throw NullPointerException() }
+	): Double = (map[k] as? JSONNumber)?.double ?: run(orElse)
+
+	/**
+	 * Get a [Double] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [Double] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Double].
+	 */
+	@Throws(ClassCastException::class)
+	fun getDoubleOrNull(k: String): Double? = (map[k] as? JSONNumber)?.double
+
+	/**
+	 * Get a [Float] associated with requested key.
+	 *
+	 * @param k
+	 *   The key.
+	 * @param orElse
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
+	 * @return
+	 *   The [Float] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
+	 * @throws NullPointerException
+	 *   If the requested key is not present and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Float].
+	 */
+	@Throws(NullPointerException::class, ClassCastException::class)
+	fun getFloat(
+		k: String,
+		orElse: ()->Float = { throw NullPointerException() }
+	): Float = (map[k] as? JSONNumber)?.float ?: run(orElse)
+
+	/**
+	 * Get a [Float] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [Float] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [Float].
+	 */
+	@Throws(ClassCastException::class)
+	fun getFloatOrNull(k: String): Float? = (map[k] as? JSONNumber)?.float
+	
+	/**
 	 * Get a [String] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
 	 * @param orElse
-	 *   An optional function to run if k was not found.  If not present, a
-	 *   [NullPointerException] is thrown if k was not found.
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
 	 * @return
-	 *   The `String` associated with requested key.
+	 *   The [String] associated with requested key, or the result of applying
+	 *   [orElse] if [k] was not found.
 	 * @throws NullPointerException
 	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
@@ -148,19 +411,35 @@ class JSONObject internal constructor(
 	): String = (map[k] as? JSONValue)?.string ?: run(orElse)
 
 	/**
+	 * Get a [String] associated with requested key, or `null` if no such key
+	 * exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [String] associated with requested key, or `null` if no such key
+	 *   exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [JSONValue].
+	 */
+	@Throws(ClassCastException::class)
+	fun getStringOrNull(k: String): String? = (map[k] as? JSONValue)?.string
+	
+	/**
 	 * Get a [JSONArray] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
 	 * @param orElse
-	 *   An optional function to run if k was not found.  If not present, a
-	 *   [NullPointerException] is thrown if k was not found.
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
 	 * @return
-	 *   The `JSONArray` associated with requested key.
+	 *   The [JSONArray] associated with requested key, or the result of
+	 *   applying [orElse] if [k] was not found.
 	 * @throws NullPointerException
 	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
-	 *   If the value associated with the requested key is not a `JSONArray`.
+	 *   If the value associated with the requested key is not a [JSONArray].
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getArray(
@@ -169,25 +448,56 @@ class JSONObject internal constructor(
 	): JSONArray = (map[k] as? JSONArray) ?: run(orElse)
 
 	/**
+	 * Get a [JSONArray] associated with requested key, or `null` if no such key
+	 * exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [JSONArray] associated with requested key, or `null` if no such key
+	 *   exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [JSONArray].
+	 */
+	@Throws(ClassCastException::class)
+	fun getArrayOrNull(k: String): JSONArray? = map[k] as? JSONArray
+	
+	/**
 	 * Get a [JSONObject] associated with requested key.
 	 *
 	 * @param k
 	 *   The key.
 	 * @param orElse
-	 *   An optional function to run if k was not found.  If not present, a
-	 *   [NullPointerException] is thrown if k was not found.
+	 *   An optional function to run if [k] was not found.  If not present, a
+	 *   [NullPointerException] is thrown if [k] was not found.
 	 * @return
-	 *   The `JSONObject` associated with requested key.
+	 *   The [JSONObject] associated with requested key, or the result of
+	 *   applying [orElse] if [k] was not found.
 	 * @throws NullPointerException
 	 *   If the requested key is not present and [orElse] was omitted.
 	 * @throws ClassCastException
-	 *   If the value associated with the requested key is not a `JSONObject`.
+	 *   If the value associated with the requested key is not a [JSONObject].
 	 */
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getObject(
 		k: String,
 		orElse: () -> JSONObject = { throw NullPointerException() }
 	): JSONObject = (map[k] as? JSONObject) ?: run(orElse)
+
+	/**
+	 * Get a [JSONObject] associated with requested key, or `null` if no such
+	 * key exists.
+	 *
+	 * @param k
+	 *   The key.
+	 * @return
+	 *   The [JSONObject] associated with requested key, or `null` if no such
+	 *   key exists.
+	 * @throws ClassCastException
+	 *   If the value associated with the requested key is not a [JSONObject].
+	 */
+	@Throws(ClassCastException::class)
+	fun getObjectOrNull(k: String): JSONObject? = map[k] as? JSONObject
 
 	override fun iterator(): Iterator<Entry<String, JSONData>> =
 		map.entries.iterator()
@@ -201,7 +511,7 @@ class JSONObject internal constructor(
 
 	companion object
 	{
-		/** The sole empty `JSONObject`. */
+		/** The sole empty [JSONObject]. */
 		val empty = JSONObject(emptyMap())
 	}
 }

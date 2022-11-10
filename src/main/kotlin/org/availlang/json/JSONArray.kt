@@ -53,7 +53,8 @@ import java.math.BigInteger
  */
 @Suppress("unused")
 class JSONArray internal constructor(
-	private val array: Array<JSONData>) : JSONData(), Iterable<JSONData>
+	private val array: Array<JSONData>
+) : JSONData(), Iterable<JSONData>
 {
 	override val isArray: Boolean get() = true
 
@@ -79,85 +80,394 @@ class JSONArray internal constructor(
 	operator fun get(index: Int): JSONData = array[index]
 
 	/**
-	 * Get a `Boolean` at the requested subscript.
+	 * Get a [Boolean] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [Boolean] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getBoolean(
+		index: Int,
+		orElse: ()->Boolean = { throw NullPointerException() }
+	): Boolean = (array[index] as? JSONValue)?.boolean ?: run(orElse)
+
+	/**
+	 * Get a [Boolean] or `null` at the requested subscript.
 	 *
 	 * @param index
 	 *   The array subscript.
 	 * @return
-	 *   The `Boolean` at the requested subscript.
+	 *   The [Boolean] at the requested subscript.
 	 * @throws ArrayIndexOutOfBoundsException
 	 *   If the subscript is out of bounds.
 	 * @throws ClassCastException
 	 *   If the element at the requested subscript is not a [JSONValue].
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
-	fun getBoolean(index: Int): Boolean = (array[index] as JSONValue).boolean
+	fun getBooleanOrNull(index: Int): Boolean? =
+		(array[index] as? JSONValue)?.boolean
 
 	/**
 	 * Get a [JSONNumber] at the requested subscript.
 	 *
 	 * @param index
 	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
 	 * @return
-	 *   The `JSONNumber` at the requested subscript.
+	 *   The [JSONNumber] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
 	 * @throws ArrayIndexOutOfBoundsException
 	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
 	 * @throws ClassCastException
-	 *   If the element at the requested subscript is not a `JSONNumber`.
+	 *   If the element at the requested subscript is not a [JSONNumber].
 	 */
-	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
-	fun getNumber(index: Int): JSONNumber = array[index] as JSONNumber
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getNumber(
+		index: Int,
+		orElse: ()->JSONNumber = { throw NullPointerException() }
+	): JSONNumber = array[index] as? JSONNumber ?: run(orElse)
 
 	/**
-	 * Get a [String] at the requested subscript.
+	 * Get a [JSONNumber] or `null` at the requested subscript.
 	 *
 	 * @param index
 	 *   The array subscript.
 	 * @return
-	 *   The `String` at the requested subscript.
+	 *   The [JSONNumber] at the requested subscript.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONNumber].
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
+	fun getNumberOrNull(index: Int): JSONNumber? = array[index] as? JSONNumber
+
+	/**
+	 * Get a [BigInteger] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [BigInteger] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getBigInteger(
+		index: Int,
+		orElse: ()->BigInteger = { throw NullPointerException() }
+	): BigInteger = (array[index] as? JSONNumber)?.bigInteger ?: run(orElse)
+
+	/**
+	 * Get a [BigInteger] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [BigInteger] at the requested subscript.
 	 * @throws ArrayIndexOutOfBoundsException
 	 *   If the subscript is out of bounds.
 	 * @throws ClassCastException
 	 *   If the element at the requested subscript is not a [JSONValue].
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
-	fun getString(index: Int): String = (array[index] as JSONValue).string
+	fun getBigIntegerOrNull(index: Int): BigInteger? =
+		(array[index] as? JSONNumber)?.bigInteger
+
+	/**
+	 * Get a [BigDecimal] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [BigDecimal] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getBigDecimal(
+		index: Int,
+		orElse: ()->BigDecimal = { throw NullPointerException() }
+	): BigDecimal = (array[index] as? JSONNumber)?.bigDecimal ?: run(orElse)
+
+	/**
+	 * Get a [BigDecimal] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [BigDecimal] at the requested subscript.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
+	fun getBigDecimalOrNull(index: Int): BigDecimal? =
+		(array[index] as? JSONNumber)?.bigDecimal
+
+	/**
+	 * Get a [Long] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [Long] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getLong(
+		index: Int,
+		orElse: ()->Long = { throw NullPointerException() }
+	): Long = (array[index] as? JSONNumber)?.long ?: run(orElse)
+
+	/**
+	 * Get a [Long] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [Long] at the requested subscript.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
+	fun getLongOrNull(index: Int): Long? = (array[index] as? JSONNumber)?.long
+
+	/**
+	 * Get a [Int] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [Int] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getInt(
+		index: Int,
+		orElse: ()->Int = { throw NullPointerException() }
+	): Int = (array[index] as? JSONNumber)?.int ?: run(orElse)
+
+	/**
+	 * Get a [Int] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [Int] at the requested subscript.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
+	fun getIntOrNull(index: Int): Int? = (array[index] as? JSONNumber)?.int
+
+	/**
+	 * Get a [String] at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
+	 * @return
+	 *   The [String] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getString(
+		index: Int,
+		orElse: ()->String = { throw NullPointerException() }
+	): String = (array[index] as? JSONValue)?.string ?: run(orElse)
+
+	/**
+	 * Get a [String] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [String] at the requested subscript.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
+	fun getStringOrNull(index: Int): String? =
+		(array[index] as? JSONValue)?.string
 
 	/**
 	 * Get a [JSONArray] at the requested subscript.
 	 *
 	 * @param index
 	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
 	 * @return
-	 *   The `JSONArray` at the requested subscript.
+	 *   The [JSONArray] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getArray(
+		index: Int,
+		orElse: ()->JSONArray = { throw NullPointerException() }
+	): JSONArray = array[index] as? JSONArray ?: run(orElse)
+
+	/**
+	 * Get a [JSONArray] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [JSONArray] at the requested subscript.
 	 * @throws ArrayIndexOutOfBoundsException
 	 *   If the subscript is out of bounds.
 	 * @throws ClassCastException
-	 *   If the element at the requested subscript is not a `JSONArray`.
+	 *   If the element at the requested subscript is not a [JSONValue].
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
-	fun getArray(index: Int): JSONArray = array[index] as JSONArray
+	fun getArrayOrNull(index: Int): JSONArray? = array[index] as? JSONArray
 
 	/**
 	 * Get a [JSONObject] at the requested subscript.
 	 *
 	 * @param index
 	 *   The array subscript.
+	 * @param orElse
+	 *   An optional function to run if the element was `null`. If not present,
+	 *   a [NullPointerException] is thrown if the element was `null`.
 	 * @return
-	 *   The `JSONObject` at the requested subscript.
+	 *   The [JSONObject] at the requested subscript, or the result of applying
+	 *   [orElse] if the element was `null`.
+	 * @throws ArrayIndexOutOfBoundsException
+	 *   If the subscript is out of bounds.
+	 * @throws NullPointerException
+	 *   If the requested element is `null` and [orElse] was omitted.
+	 * @throws ClassCastException
+	 *   If the element at the requested subscript is not a [JSONValue].
+	 */
+	@Throws(
+		ArrayIndexOutOfBoundsException::class,
+		NullPointerException::class,
+		ClassCastException::class)
+	fun getObject(
+		index: Int,
+		orElse: ()->JSONObject = { throw NullPointerException() }
+	): JSONObject = array[index] as? JSONObject ?: run(orElse)
+
+	/**
+	 * Get a [JSONObject] or `null` at the requested subscript.
+	 *
+	 * @param index
+	 *   The array subscript.
+	 * @return
+	 *   The [JSONObject] at the requested subscript.
 	 * @throws ArrayIndexOutOfBoundsException
 	 *   If the subscript is out of bounds.
 	 * @throws ClassCastException
-	 *   If the element at the requested subscript is not a `JSONObject`.
+	 *   If the element at the requested subscript is not a [JSONValue].
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class, ClassCastException::class)
-	fun getObject(index: Int): JSONObject = array[index] as JSONObject
+	fun getObjectOrNull(index: Int): JSONObject? = array[index] as? JSONObject
 
 	/**
 	 * Extract a [List] of [BigDecimal], throwing a [ClassCastException] if any
 	 * elements are non-numeric.
 	 */
-	val bigDecimals get() = array.map(JSONData::bigDecimal)
+	val bigDecimals
+		@Throws(ClassCastException::class)
+		get() = array.map(JSONData::bigDecimal)
 
 	/**
 	 * Extract a [List] of [BigInteger], throwing a [ClassCastException] if any
@@ -166,7 +476,7 @@ class JSONArray internal constructor(
 	 * is thrown.
 	 */
 	val bigIntegers
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = array.map(JSONData::bigInteger)
 
 	/**
@@ -176,7 +486,7 @@ class JSONArray internal constructor(
 	 * which exception is thrown.
 	 */
 	val ints
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = array.map(JSONData::int)
 
 	/**
@@ -186,26 +496,32 @@ class JSONArray internal constructor(
 	 * which exception is thrown.
 	 */
 	val longs
-		@Throws(ArithmeticException::class)
+		@Throws(ClassCastException::class, ArithmeticException::class)
 		get() = array.map(JSONData::long)
 
 	/**
 	 * Extract a [List] of [Float]s, throwing a [ClassCastException] if any
 	 * elements are non-numeric.
 	 */
-	val floats get() = array.map(JSONData::float)
+	val floats
+		@Throws(ClassCastException::class)
+		get() = array.map(JSONData::float)
 
 	/**
 	 * Extract a [List] of [Double]s, throwing a [ClassCastException] if any
 	 * elements are non-numeric.
 	 */
-	val doubles get() = array.map(JSONData::double)
+	val doubles
+		@Throws(ClassCastException::class)
+		get() = array.map(JSONData::double)
 
 	/**
 	 * Extract a [List] of [String]s, throwing a [ClassCastException] if any
 	 * element is not a string.
 	 */
-	val strings get() = array.map(JSONData::string)
+	val strings
+		@Throws(ClassCastException::class)
+		get() = array.map(JSONData::string)
 
 	/**
 	 * Extract a [List] of [Boolean]s, throwing a [ClassCastException] if any

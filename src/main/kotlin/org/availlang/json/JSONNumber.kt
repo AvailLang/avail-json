@@ -48,8 +48,7 @@ import java.math.BigInteger
  * @author Todd L Smith &lt;todd@availlang.org&gt;
  */
 @Suppress("unused")
-class JSONNumber
-constructor(
+class JSONNumber constructor(
 	@Suppress("MemberVisibilityCanBePrivate")
 	override val bigDecimal: BigDecimal
 ): JSONData()
