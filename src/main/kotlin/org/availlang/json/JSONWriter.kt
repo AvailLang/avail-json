@@ -46,8 +46,8 @@ import java.util.Formatter
 import java.util.LinkedList
 
 /**
- * A `JSONWriter` produces ASCII-only documents that adhere strictly to
- * ECMA 404: "The JSON Data Interchange Format".
+ * A stateful JSON writer that produces ASCII-only documents that adhere 
+ * strictly to ECMA 404: "The JSON Data Interchange Format".
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
  * @author Richard Arriaga
@@ -173,7 +173,6 @@ open class JSONWriter constructor(
 		{
 			throw JSONIOException(e)
 		}
-
 	}
 
 	/**
@@ -198,7 +197,6 @@ open class JSONWriter constructor(
 		{
 			throw JSONIOException(e)
 		}
-
 	}
 
 	/**
@@ -220,17 +218,27 @@ open class JSONWriter constructor(
 		{
 			throw JSONIOException(e)
 		}
-
 	}
 
 	/**
 	 * A `JSONState` represents the [writer][JSONWriter]'s view of what
 	 * operations are legal based on what operations have become before.
+	 *
+	 * @property description
+	 *   The description of this [JSONState].
 	 */
-	internal enum class JSONState
+	internal enum class JSONState constructor(val description: String)
 	{
-		/** The [writer][JSONWriter] is expecting a single arbitrary value. */
-		EXPECTING_SINGLE_VALUE
+		/**
+		 * The [writer][JSONWriter] is expecting a single arbitrary value of any
+		 * valid JSON type. This is the start of the document.
+		 *
+		 * Note: Writing a non-array and non-object value immediately
+		 * [ends][EXPECTING_END_OF_DOCUMENT] the document.
+		 */
+		EXPECTING_SINGLE_VALUE(
+			"the writer is expecting a single arbitrary value of any " +
+				"valid JSON type; the start of the document")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_END_OF_DOCUMENT
@@ -240,13 +248,19 @@ open class JSONWriter constructor(
 			{
 				// Do nothing.
 			}
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingSingleArbitraryValueException
 		},
 
 		/** The [writer][JSONWriter] is expecting the end of the document. */
-		EXPECTING_END_OF_DOCUMENT
+		EXPECTING_END_OF_DOCUMENT(
+			"the writer has ended the document; no other state " +
+				"permitted to be written")
 		{
 			override fun nextStateAfterValue(): JSONState =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"No \"next state expected\" as $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanEndDocument()
@@ -256,39 +270,50 @@ open class JSONWriter constructor(
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteAnyValue() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to emit a value but $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteStringValue() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to emit a String value but $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteObjectStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an object but $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteArrayStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an array but $description.")
 
 			override val newlineBeforeWrite: Boolean = true
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::EndOfDocumentException
 		},
 
 		/**
 		 * The [writer][JSONWriter] is expecting the first object key or the end
 		 * of an object.
 		 */
-		EXPECTING_FIRST_OBJECT_KEY_OR_OBJECT_END
+		EXPECTING_FIRST_OBJECT_KEY_OR_OBJECT_END(
+			"the writer is expecting the first object key or the end " +
+				"of a JSON object")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_OBJECT_VALUE
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteAnyValue() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to emit a value but $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteObjectStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an object but $description.")
 
 			override fun checkCanWriteObjectEnd()
 			{
@@ -297,27 +322,35 @@ open class JSONWriter constructor(
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteArrayStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an array but $description.")
 
 			override val newlineBeforeWrite: Boolean = true
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingObjectKeyOrObjectEndException
 		},
 
 		/**
 		 * The [writer][JSONWriter] is expecting an object key or the end of an
 		 * object.
 		 */
-		EXPECTING_OBJECT_KEY_OR_OBJECT_END
+		EXPECTING_OBJECT_KEY_OR_OBJECT_END(
+			"the writer is expecting an object key or the end of a " +
+				"JSON object")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_OBJECT_VALUE
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteAnyValue() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to emit a value but $description.")
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteObjectStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an object but $description.")
 
 			override fun checkCanWriteObjectEnd()
 			{
@@ -326,7 +359,8 @@ open class JSONWriter constructor(
 
 			@Throws(IllegalStateException::class)
 			override fun checkCanWriteArrayStart() =
-				throw IllegalStateException()
+				throw exceptionCreator(
+					"Attempting to start an array but $description.")
 
 			@Throws(JSONIOException::class)
 			override fun writePrologueTo(writer: JSONWriter) =
@@ -340,12 +374,15 @@ open class JSONWriter constructor(
 				}
 
 			override val newlineBeforeWrite: Boolean = true
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingObjectKeyOrObjectEndException
 		},
 
 		/**
 		 * The [writer][JSONWriter] is expecting an object value.
 		 */
-		EXPECTING_OBJECT_VALUE
+		EXPECTING_OBJECT_VALUE("the writer is expecting an object value")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_OBJECT_KEY_OR_OBJECT_END
@@ -360,13 +397,18 @@ open class JSONWriter constructor(
 				{
 					writer.privateWrite(':')
 				}
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingObjectValueException
 		},
 
 		/**
 		 * The [writer][JSONWriter] is expecting the first value of an array or
 		 * the end of an array.
 		 */
-		EXPECTING_FIRST_VALUE_OR_ARRAY_END
+		EXPECTING_FIRST_VALUE_OR_ARRAY_END(
+			"the writer is expecting the first value of an array or " +
+				"the end of a JSON array")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_VALUE_OR_ARRAY_END
@@ -375,13 +417,18 @@ open class JSONWriter constructor(
 			{
 				// Do nothing.
 			}
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingValueOrArrayEndException
 		},
 
 		/**
 		 * The [writer][JSONWriter] is expecting an arbitrary value or the end
 		 * of a JSON array.
 		 */
-		EXPECTING_VALUE_OR_ARRAY_END
+		EXPECTING_VALUE_OR_ARRAY_END(
+			"the writer is expecting an arbitrary value or the end " +
+				"of a JSON array")
 		{
 			override fun nextStateAfterValue(): JSONState =
 				EXPECTING_VALUE_OR_ARRAY_END
@@ -394,7 +441,16 @@ open class JSONWriter constructor(
 			@Throws(JSONIOException::class)
 			override fun writePrologueTo(writer: JSONWriter) =
 				writer.privateWrite(',')
+
+			override val exceptionCreator: (String)->JSONStateException =
+				::ExpectingValueOrArrayEndException
 		};
+
+		/**
+		 * Answer the [JSONStateException] associated with this [JSONState]
+		 * using the lambda input as the [JSONStateException.message].
+		 */
+		protected abstract val exceptionCreator: (String) -> JSONStateException
 
 		/**
 		 * Check that the receiver permits the [writer][JSONWriter] to be
@@ -405,7 +461,8 @@ open class JSONWriter constructor(
 		 */
 		@Throws(IllegalStateException::class)
 		internal open fun checkCanEndDocument(): Unit =
-			throw IllegalStateException()
+			throw exceptionCreator(
+				"Attempting to close document but $description")
 
 		/**
 		 * Check that the receiver permits the [writer][JSONWriter] to emit an
@@ -456,7 +513,8 @@ open class JSONWriter constructor(
 		@Throws(IllegalStateException::class)
 		internal open fun checkCanWriteObjectEnd()
 		{
-			throw IllegalStateException()
+			throw exceptionCreator(
+				"Attempting to close an object but $description")
 		}
 
 		/**
@@ -481,7 +539,8 @@ open class JSONWriter constructor(
 		 */
 		@Throws(IllegalStateException::class)
 		internal open fun checkCanWriteArrayEnd(): Unit =
-			throw IllegalStateException()
+			throw exceptionCreator(
+				"Attempting to close an array but $description")
 
 		/**
 		 * Answer the next [state][JSONState] following the writing of a value.

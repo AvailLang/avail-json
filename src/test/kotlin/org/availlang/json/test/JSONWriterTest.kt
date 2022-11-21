@@ -32,6 +32,11 @@
 
 package org.availlang.json.test
 
+import org.availlang.json.EndOfDocumentException
+import org.availlang.json.ExpectingObjectKeyOrObjectEndException
+import org.availlang.json.ExpectingObjectValueException
+import org.availlang.json.ExpectingSingleArbitraryValueException
+import org.availlang.json.ExpectingValueOrArrayEndException
 import org.availlang.json.JSONException
 import org.availlang.json.JSONObject
 import org.availlang.json.JSONReader
@@ -152,7 +157,61 @@ class JSONWriterTest
 	{
 		val writer = JSONWriter()
 		writer.startObject()
-		assertThrows(IllegalStateException::class.java) { writer.endArray() }
+		assertThrows(ExpectingObjectKeyOrObjectEndException::class.java)
+			{ writer.endArray() }
 		displayTestPayload(writer, false)
+	}
+
+	@Test
+	@DisplayName("Test Failure: Close an object when not expected")
+	internal fun inappropriateCloseObject()
+	{
+		val writer = JSONWriter()
+		writer.startArray()
+		assertThrows(ExpectingValueOrArrayEndException::class.java)
+		{ writer.endObject() }
+		displayTestPayload(writer, false)
+	}
+
+	@Test
+	@DisplayName("Test Failure: Write value when not expected")
+	internal fun inappropriateObjectValue()
+	{
+		val writer = JSONWriter()
+		writer.startObject()
+		assertThrows(ExpectingObjectKeyOrObjectEndException::class.java)
+		{ writer.write(5) }
+		displayTestPayload(writer, false)
+	}
+
+	@Test
+	@DisplayName("Test Failure: Close an object when object value expected")
+	internal fun inappropriateObjectClose()
+	{
+		val writer = JSONWriter()
+		writer.startObject()
+		writer.write("foo")
+		assertThrows(ExpectingObjectValueException::class.java)
+		{ writer.endObject() }
+		displayTestPayload(writer, false)
+	}
+
+	@Test
+	@DisplayName("Test Failure: Started a document without a valid JSON type")
+	internal fun inappropriateDocumentStart()
+	{
+		val writer = JSONWriter()
+		assertThrows(ExpectingSingleArbitraryValueException::class.java)
+			{ writer.endObject() }
+	}
+
+	@Test
+	@DisplayName("Test Failure: Wrote to document after document end")
+	internal fun inappropriateWriteAfterEnd()
+	{
+		val writer = JSONWriter()
+		writer.writeObject {  }
+		assertThrows(EndOfDocumentException::class.java)
+		{ writer.write(5) }
 	}
 }
