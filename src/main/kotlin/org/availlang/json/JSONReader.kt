@@ -373,7 +373,8 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 				val codePoint = readCodePoint()
 				if (codePoint == -1)
 				{
-					throw MalformedJSONException()
+					throw MalformedJSONException(
+						"Ran out of data while reading a String.")
 				}
 				if (codePoint <= 0x001F)
 				{
@@ -413,7 +414,9 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 		while (peekFor(','.code, null))
 		if (!peekFor(']'.code, null))
 		{
-			throw MalformedJSONException()
+			throw MalformedJSONException(
+				"Array not properly closed expected codepoint ${'['.code} " +
+					"(']'), but got ${peekCodePoint()}.")
 		}
 		return JSONArray(list.toTypedArray())
 	}
@@ -445,7 +448,10 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 			skipWhitespace()
 			if (!peekFor(':'.code, null))
 			{
-				throw MalformedJSONException()
+				throw MalformedJSONException(
+					"Attempted to read a key-value pair from an object but " +
+						"no colon ':' (${':'.code}) was found after key name " +
+						"was read.")
 			}
 			val value = readData()
 			map[key] = value
@@ -454,7 +460,9 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 		while (peekFor(','.code, null))
 		if (!peekFor('}'.code, null))
 		{
-			throw MalformedJSONException()
+			throw MalformedJSONException(
+				"Object not properly closed expected codepoint ${'}'.code} " +
+					"('}'), but got ${peekCodePoint()}.")
 		}
 		return JSONObject(map)
 	}
@@ -502,7 +510,11 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 				}
 				else
 				{
-					throw MalformedJSONException()
+					throw MalformedJSONException(
+						"Attempted to read a field value that started with " +
+							"codepoint ${'f'.code} ('f') which implies " +
+							"boolean value 'false' but text 'false' was not " +
+							"read.")
 				}
 			'n'.code ->
 				// Read a JSON value (true, false, or null).
@@ -512,7 +524,10 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 				}
 				else
 				{
-					throw MalformedJSONException()
+					throw MalformedJSONException(
+						"Attempted to read a field value that started with " +
+							"codepoint ${'n'.code} ('n') which implies " +
+							"'null' value but text 'null' was not read.")
 				}
 			't'.code ->
 				// Read a JSON true.
@@ -522,9 +537,17 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 				}
 				else
 				{
-					throw MalformedJSONException()
+					throw MalformedJSONException(
+						"Attempted to read a field value that started with " +
+							"codepoint ${'f'.code} ('t') which implies " +
+							"boolean value 'true' but text 'true' was not " +
+							"read.")
 				}
-			else -> throw MalformedJSONException()
+			else -> throw MalformedJSONException(
+				"Attempted to read a field value but the field did not start " +
+					"with a valid character, started with codepoint," +
+					" $firstCodePoint."
+			)
 		}
 		return data
 	}
@@ -547,7 +570,8 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 			val codePoint = readCodePoint()
 			if (codePoint != -1)
 			{
-				throw MalformedJSONException()
+				throw MalformedJSONException(
+					"Incomplete JSON: No more data available")
 			}
 			return data
 		}

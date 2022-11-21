@@ -86,7 +86,7 @@ class JSONObject internal constructor(
 	 *   If the requested key is not present.
 	 */
 	operator fun get(k: String): JSONData =
-		map[k] ?: throw NullPointerException()
+		map[k] ?: throw NullPointerException("Key, $k, not found.")
 
 	/**
 	 * Get a [Boolean] associated with requested key.
@@ -107,7 +107,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getBoolean(
 		k: String,
-		orElse: ()->Boolean = { throw NullPointerException() }
+		orElse: ()->Boolean = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): Boolean = (map[k] as? JSONValue)?.boolean ?: run(orElse)
 
 	/**
@@ -146,7 +148,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getNumber(
 		k: String,
-		orElse: ()->JSONNumber = { throw NullPointerException() }
+		orElse: ()->JSONNumber = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): JSONNumber = (map[k] as? JSONNumber) ?: run(orElse)
 
 	/**
@@ -183,7 +187,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getBigInteger(
 		k: String,
-		orElse: ()->BigInteger = { throw NullPointerException() }
+		orElse: ()->BigInteger = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): BigInteger = (map[k] as? JSONNumber)?.bigInteger ?: run(orElse)
 
 	/**
@@ -221,7 +227,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getLong(
 		k: String,
-		orElse: ()->Long = { throw NullPointerException() }
+		orElse: ()->Long = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): Long = (map[k] as? JSONNumber)?.long ?: run(orElse)
 
 	/**
@@ -258,7 +266,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getInt(
 		k: String,
-		orElse: ()->Int = { throw NullPointerException() }
+		orElse: ()->Int = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): Int = (map[k] as? JSONNumber)?.int ?: run(orElse)
 
 	/**
@@ -295,7 +305,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getBigDecimal(
 		k: String,
-		orElse: ()->BigDecimal = { throw NullPointerException() }
+		orElse: ()->BigDecimal = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): BigDecimal = (map[k] as? JSONNumber)?.bigDecimal ?: run(orElse)
 
 	/**
@@ -333,7 +345,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getDouble(
 		k: String,
-		orElse: ()->Double = { throw NullPointerException() }
+		orElse: ()->Double = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): Double = (map[k] as? JSONNumber)?.double ?: run(orElse)
 
 	/**
@@ -370,7 +384,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getFloat(
 		k: String,
-		orElse: ()->Float = { throw NullPointerException() }
+		orElse: ()->Float = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): Float = (map[k] as? JSONNumber)?.float ?: run(orElse)
 
 	/**
@@ -407,7 +423,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getString(
 		k: String,
-		orElse: ()->String = { throw NullPointerException() }
+		orElse: ()->String = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): String = (map[k] as? JSONValue)?.string ?: run(orElse)
 
 	/**
@@ -444,7 +462,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getArray(
 		k: String,
-		orElse: () -> JSONArray = { throw NullPointerException() }
+		orElse: () -> JSONArray = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): JSONArray = (map[k] as? JSONArray) ?: run(orElse)
 
 	/**
@@ -481,7 +501,9 @@ class JSONObject internal constructor(
 	@Throws(NullPointerException::class, ClassCastException::class)
 	fun getObject(
 		k: String,
-		orElse: () -> JSONObject = { throw NullPointerException() }
+		orElse: () -> JSONObject = {
+			throw NullPointerException("Key, $k, not found.")
+		}
 	): JSONObject = (map[k] as? JSONObject) ?: run(orElse)
 
 	/**

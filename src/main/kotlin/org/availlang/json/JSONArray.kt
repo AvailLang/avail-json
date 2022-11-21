@@ -103,7 +103,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getBoolean(
 		index: Int,
-		orElse: ()->Boolean = { throw NullPointerException() }
+		orElse: ()->Boolean = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"boolean.")
+		}
 	): Boolean = (array[index] as? JSONValue)?.boolean ?: run(orElse)
 
 	/**
@@ -146,7 +150,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getNumber(
 		index: Int,
-		orElse: ()->JSONNumber = { throw NullPointerException() }
+		orElse: ()->JSONNumber = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"number.")
+		}
 	): JSONNumber = array[index] as? JSONNumber ?: run(orElse)
 
 	/**
@@ -188,7 +196,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getBigInteger(
 		index: Int,
-		orElse: ()->BigInteger = { throw NullPointerException() }
+		orElse: ()->BigInteger = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"BigInteger.")
+		}
 	): BigInteger = (array[index] as? JSONNumber)?.bigInteger ?: run(orElse)
 
 	/**
@@ -231,7 +243,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getBigDecimal(
 		index: Int,
-		orElse: ()->BigDecimal = { throw NullPointerException() }
+		orElse: ()->BigDecimal = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"BigDecimal.")
+		}
 	): BigDecimal = (array[index] as? JSONNumber)?.bigDecimal ?: run(orElse)
 
 	/**
@@ -274,7 +290,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getLong(
 		index: Int,
-		orElse: ()->Long = { throw NullPointerException() }
+		orElse: ()->Long = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"Long.")
+		}
 	): Long = (array[index] as? JSONNumber)?.long ?: run(orElse)
 
 	/**
@@ -316,7 +336,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getInt(
 		index: Int,
-		orElse: ()->Int = { throw NullPointerException() }
+		orElse: ()->Int = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read an " +
+					"Int.")
+		}
 	): Int = (array[index] as? JSONNumber)?.int ?: run(orElse)
 
 	/**
@@ -358,7 +382,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getString(
 		index: Int,
-		orElse: ()->String = { throw NullPointerException() }
+		orElse: ()->String = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read a " +
+					"String.")
+		}
 	): String = (array[index] as? JSONValue)?.string ?: run(orElse)
 
 	/**
@@ -401,7 +429,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getArray(
 		index: Int,
-		orElse: ()->JSONArray = { throw NullPointerException() }
+		orElse: ()->JSONArray = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read an " +
+					"Array.")
+		}
 	): JSONArray = array[index] as? JSONArray ?: run(orElse)
 
 	/**
@@ -443,7 +475,11 @@ class JSONArray internal constructor(
 		ClassCastException::class)
 	fun getObject(
 		index: Int,
-		orElse: ()->JSONObject = { throw NullPointerException() }
+		orElse: ()->JSONObject = {
+			throw NullPointerException(
+				"Value at index, $index, was `null` when trying to read an " +
+					"Object.")
+		}
 	): JSONObject = array[index] as? JSONObject ?: run(orElse)
 
 	/**

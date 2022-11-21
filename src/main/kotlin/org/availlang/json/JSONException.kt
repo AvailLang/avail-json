@@ -39,6 +39,7 @@ import java.io.IOException
  * reading of a JSON document.
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
+ * @author Richard Arriaga
  */
 abstract class JSONException : RuntimeException
 {
@@ -49,12 +50,20 @@ abstract class JSONException : RuntimeException
 	}
 
 	/**
-	 * Construct a new `JSONException`.
+	 * Construct a new [JSONException].
 	 *
 	 * @param cause
 	 *   The causal exception.
 	 */
 	protected constructor(cause: Exception) : super(cause)
+
+	/**
+	 * Construct a new [JSONException].
+	 *
+	 * @param message
+	 *   The message describing exception.
+	 */
+	protected constructor(message: String) : super(message)
 }
 
 /**
@@ -62,10 +71,11 @@ abstract class JSONException : RuntimeException
  * [IOException].
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
+ * @author Richard Arriaga
  *
  * @constructor
  *
- * Construct a new `JSONIOException`.
+ * Construct a new [JSONIOException].
  *
  * @param cause
  *   The causal exception.
@@ -74,13 +84,22 @@ class JSONIOException internal constructor(cause: Exception)
 	: JSONException(cause)
 
 /**
- * A [JSONReader] throws a `MalformedJSONException` if an invalid construct is
+ * A [JSONException] thrown by [JSONReader] if an invalid construct is
  * encountered during the parsing of a JSON document.
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
- *
- * @constructor
- *
- * Construct a new `MalformedJSONException`.
+ * @author Richard Arriaga
  */
-class MalformedJSONException internal constructor() : JSONException()
+class MalformedJSONException: JSONException
+{
+	/**
+	 * Construct a new [MalformedJSONException].
+	 */
+	@Suppress("unused")
+	internal constructor (): super()
+
+	/**
+	 * Construct a new [MalformedJSONException].
+	 */
+	internal constructor (message: String): super(message)
+}
