@@ -48,4 +48,18 @@ interface JSONFriendly
 	 *   A [JSONWriter].
 	 */
 	fun writeTo(writer: JSONWriter)
+
+	/**
+	 * The formatted JSON String of this [JSONFriendly] as the top-level JSON
+	 * element.
+	 */
+	val jsonFormattedString: String get() =
+		jsonWriter { this@JSONFriendly.writeTo(this) }.toString()
+
+	/**
+	 * The pretty-printed formatted JSON String of this [JSONFriendly] as the
+	 * top-level JSON element.
+	 */
+	val jsonPrettyPrintedFormattedString: String get() =
+		jsonPrettyPrintWriter { this@JSONFriendly.writeTo(this) }.toString()
 }

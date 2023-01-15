@@ -1,6 +1,6 @@
 Avail JSON
 ================================================================================
-[![Maven Central](https://img.shields.io/badge/maven--central-v1.1.1-0f824e)](https://search.maven.org/artifact/org.availlang/avail-json)
+[![Maven Central](https://img.shields.io/badge/maven--central-v2.1.0-0f824e)](https://search.maven.org/artifact/org.availlang/avail-json)
 
 API for procedural reading and writing of JSON data, decoupled from 
 source-level object representations to maximize developer freedom. 

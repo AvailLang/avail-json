@@ -67,6 +67,18 @@ class JSONArray internal constructor(
 	fun size(): Int = array.size
 
 	/**
+	 * @return
+	 *   `true` if [size] is 0; `false` otherwise.
+	 */
+	fun isEmpty(): Boolean = array.isEmpty()
+
+	/**
+	 * @return
+	 *   `true` if [size] is greater than 0; `false` otherwise.
+	 */
+	fun isNotEmpty(): Boolean = array.isNotEmpty()
+
+	/**
 	 * Get a [JSONData] at the requested subscript.
 	 *
 	 * @param index

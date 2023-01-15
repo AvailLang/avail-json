@@ -41,6 +41,7 @@ import org.availlang.json.JSONException
 import org.availlang.json.JSONObject
 import org.availlang.json.JSONReader
 import org.availlang.json.JSONWriter
+import org.availlang.json.json
 import org.availlang.json.test.TestJSONKeyValue.Companion.addObjectToWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.addToWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.test
@@ -56,6 +57,7 @@ import org.availlang.json.test.TestJSONKeyValue.IMATERMINATEDSTRING
 import org.availlang.json.test.TestJSONKeyValue.IMATRUE
 import org.availlang.json.test.TestJSONKeyValue.OBJINT
 import org.availlang.json.test.TestJSONKeyValue.OBJSTRING
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
@@ -213,5 +215,30 @@ class JSONWriterTest
 		writer.writeObject {  }
 		assertThrows(EndOfDocumentException::class.java)
 		{ writer.write(5) }
+	}
+
+	@Test
+	@DisplayName("Test Map Utilities")
+	internal fun testUtilities()
+	{
+		val writer = JSONWriter()
+		val m1 = mapOf("a" to 5, "b" to 10)
+		val m2 = mapOf("a" to listOf(5, 2), "b" to listOf(25, 22))
+		val m3 = mapOf("a" to true, "b" to false)
+		val m4 = mapOf("a" to listOf(false, true), "b" to listOf(false, true))
+		val i1: Iterator<Pair<String, Long>> =
+			listOf("a" to 99L, "b" to 88L).iterator()
+		writer.writeArray {
+			writeMapInt(m1)
+			writeMapInts(m2)
+			writeMapBoolean(m3)
+			writeMapBooleans(m4)
+			write("foo")
+			write("foo")
+			writeInts(listOf(11,12,15))
+			writePairsAsArrayOfPairs(i1) { f, s -> f.json to s.json }
+		}
+		val expected = "[{\"a\":5,\"b\":10},{\"a\":[5,2],\"b\":[25,22]},{\"a\":true,\"b\":false},{\"a\":[false,true],\"b\":[false,true]},\"foo\",\"foo\",[11,12,15],[[\"a\",99],[\"b\",88]]]"
+		assertEquals(expected, writer.toString())
 	}
 }

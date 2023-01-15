@@ -35,7 +35,6 @@ package org.availlang.json
 import org.availlang.json.JSONWriter.JSONState.EXPECTING_FIRST_OBJECT_KEY_OR_OBJECT_END
 import org.availlang.json.JSONWriter.JSONState.EXPECTING_FIRST_VALUE_OR_ARRAY_END
 import org.availlang.json.JSONWriter.JSONState.EXPECTING_SINGLE_VALUE
-import org.availlang.json.JSONWriter.JSONState.EXPECTING_VALUE_OR_ARRAY_END
 import java.io.IOException
 import java.io.StringWriter
 import java.io.Writer
@@ -84,10 +83,6 @@ open class JSONWriter constructor(
 	 * The prefix indentation each time a new line is to be inserted.
 	 */
 	private var newLineAndIndentation: String = ""
-
-	/** `true` indicates in an array; `false` otherwise. */
-	private var inArray = false
-	private var addedArrayObjectValue = false
 
 	/**
 	 * Update the [newLineAndIndentation] String according to the
@@ -420,6 +415,8 @@ open class JSONWriter constructor(
 
 			override val exceptionCreator: (String)->JSONStateException =
 				::ExpectingValueOrArrayEndException
+
+			override val newlineBeforeWrite: Boolean = true
 		},
 
 		/**
@@ -444,6 +441,8 @@ open class JSONWriter constructor(
 
 			override val exceptionCreator: (String)->JSONStateException =
 				::ExpectingValueOrArrayEndException
+
+			override val newlineBeforeWrite: Boolean = true
 		};
 
 		/**
@@ -567,9 +566,7 @@ open class JSONWriter constructor(
 
 		/**
 		 * When pretty-printing, can this element be started on the next line?
-		 *
-		 * @return
-		 *   `true` indicates yes; `false` indicates must be on same line.
+		 * `true` indicates yes; `false` indicates must be on same line.
 		 */
 		open val newlineBeforeWrite: Boolean = false
 	}
@@ -592,9 +589,7 @@ open class JSONWriter constructor(
 		val state = stack.removeFirst()
 		state.checkCanWriteAnyValue()
 		state.writePrologueTo(this)
-		if (prettyPrint
-			&& state.newlineBeforeWrite
-			&& state != EXPECTING_VALUE_OR_ARRAY_END)
+		if (prettyPrint && state.newlineBeforeWrite)
 		{
 			insertNewLine()
 		}
@@ -757,9 +752,7 @@ open class JSONWriter constructor(
 			val state = stack.removeFirst()
 			state.checkCanWriteStringValue()
 			state.writePrologueTo(this)
-			if (prettyPrint
-				&& state.newlineBeforeWrite
-				&& state != EXPECTING_VALUE_OR_ARRAY_END)
+			if (prettyPrint && state.newlineBeforeWrite)
 			{
 				insertNewLine()
 			}
@@ -892,15 +885,15 @@ open class JSONWriter constructor(
 		val state = currentState
 		state.checkCanWriteObjectStart()
 		state.writePrologueTo(this)
-		if (prettyPrint && inArray)
-		{
-			insertNewLine()
-			addedArrayObjectValue = true
-		}
-		privateWrite('{')
 		if (prettyPrint)
 		{
+			insertNewLine()
+			privateWrite('{')
 			increaseIndentation()
+		}
+		else
+		{
+			privateWrite('{')
 		}
 		stack.addFirst(EXPECTING_FIRST_OBJECT_KEY_OR_OBJECT_END)
 	}
@@ -969,12 +962,15 @@ open class JSONWriter constructor(
 		val state = currentState
 		state.checkCanWriteArrayStart()
 		state.writePrologueTo(this)
-		privateWrite('[')
 		if (prettyPrint)
 		{
+			insertNewLine()
+			privateWrite('[')
 			increaseIndentation()
-			inArray = true
-			addedArrayObjectValue = false
+		}
+		else
+		{
+			privateWrite('[')
 		}
 		stack.addFirst(EXPECTING_FIRST_VALUE_OR_ARRAY_END)
 	}
@@ -995,15 +991,10 @@ open class JSONWriter constructor(
 		if (prettyPrint)
 		{
 			reduceIndentation()
-			if (addedArrayObjectValue) { insertNewLine() }
+			insertNewLine()
 		}
 		privateWrite(']')
 		stack.addFirst(stack.removeFirst().nextStateAfterValue())
-		if (prettyPrint)
-		{
-			addedArrayObjectValue = false
-			inArray = false
-		}
 	}
 
 	/**
@@ -1320,6 +1311,350 @@ open class JSONWriter constructor(
 	@Throws(JSONIOException::class, IllegalStateException::class)
 	fun writeArray(values: Sequence<JSONFriendly>) =
 		writeArray(values.iterator())
+
+	/**
+	 * Write a String to [JSONFriendly] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapJsonFriendly (map: Map<String, JSONFriendly>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				value.writeTo(this)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [JSONFriendly] [Map] as a [JSONObject] 
+	 * with the map keys as the [JSONObject] keys and the corresponding map 
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapJsonFriendlies (map: Map<String, Iterable<JSONFriendly>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeArray(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Boolean] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapBoolean (map: Map<String, Boolean>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [Boolean] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapBooleans (map: Map<String, Iterable<Boolean>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeBooleans(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Int] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapInt (map: Map<String, Int>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [Int] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapInts (map: Map<String, Iterable<Int>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeInts(value)
+			}
+		}
+	
+	/**
+	 * Write a String to [Long] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapLong (map: Map<String, Long>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [Long] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapLongs (map: Map<String, Iterable<Long>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeLongs(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Double] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapDouble (map: Map<String, Double>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [Double] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapDoubles (map: Map<String, Iterable<Double>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeDoubles(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Float] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapFloat (map: Map<String, Float>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [Float] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapFloats (map: Map<String, Iterable<Float>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeFloats(value)
+			}
+		}
+	
+	/**
+	 * Write a String to [String] [Map] as a [JSONObject] with the map
+	 * keys as the [JSONObject] keys and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapString (map: Map<String, String>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				write(value)
+			}
+		}
+
+	/**
+	 * Write a String to [Iterable] of [String] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
+	 * values as the [JSONObject] [JSONArray] field values.
+	 *
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 */
+	fun writeMapStrings (map: Map<String, Iterable<String>>) =
+		writeObject {
+			map.forEach { (key, value) ->
+				write(key)
+				writeStrings(value)
+			}
+		}
+
+	/**
+	 * Write a map keyed by an arbitrary type to [JSONFriendly] as a
+	 * [JSONObject] with the map keys transformed into [JSONObject] keys using
+	 * the key creator lambda and the corresponding map values as the
+	 * [JSONObject] field values.
+	 *
+	 * @param Key
+	 *   The type of the [Map]'s key.
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 * @param keyCreator
+	 *   Accepts the map key and answers a String that  is used as the
+	 *   [JSONObject] field key for the associated value.
+	 */
+	fun <Key> writeMap (
+		map: Map<Key, JSONFriendly>,
+		keyCreator: (Key) -> String
+	) = writeObject {
+			map.forEach { (key, value) ->
+				write(keyCreator(key))
+				value.writeTo(this)
+			}
+		}
+
+	/**
+	 * Write a map keyed by an arbitrary type to another arbitrary type as a
+	 * [JSONObject] with the map keys transformed into [JSONObject] keys using
+	 * the key creator lambda and the corresponding map values transformed into
+	 * [JSONFriendly] using the value creator lambda as the [JSONObject] field
+	 * values.
+	 *
+	 * @param Key
+	 *   The type of the [Map]'s key.
+	 * @param Value
+	 *   The type of the [Map]'s value.
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 * @param pairCreator
+	 *   Accepts the map key and the associated value and answers a [Pair] of
+	 *   String to [JSONFriendly] with the first element of the pair used as the
+	 *   [JSONObject] field key and the second element of the pair as the
+	 *   associated field value.
+	 */
+	fun <Key, Value> writeMap (
+		map: Map<Key, Value>,
+		pairCreator: (Key, Value) -> Pair<String, JSONFriendly>
+	) = writeObject {
+		map.forEach { (key, value) ->
+			pairCreator(key, value).let {
+				write(it.first)
+				it.second.writeTo(this)
+			}
+		}
+	}
+
+	/**
+	 * Write a map keyed by an arbitrary type to another arbitrary type as a
+	 * [JSONArray] of [JSONArray] pairs with the map keys as the first element
+	 * in the [JSONArray] pair and the value as the second element in the
+	 * [JSONArray] pair transformed into [JSONFriendly] - [JSONFriendly] pairs
+	 * by the provided lambda.
+	 *
+	 * @param Key
+	 *   The type of the [Map]'s key.
+	 * @param Value
+	 *   The type of the [Map]'s value.
+	 * @param map
+	 *   The [Map] to serialize into this [JSONWriter].
+	 * @param pairTransformer
+	 *   Accepts the map key and the associated value and answers a [Pair] of
+	 *   [JSONFriendly] to [JSONFriendly] that are written in pair order to the
+	 *   [JSONArray] pair.
+	 */
+	fun <Key, Value> writeMapAsArrayOfPairs (
+		map: Map<Key, Value>,
+		pairTransformer: (Key, Value) -> Pair<JSONFriendly, JSONFriendly>
+	) = writeArray {
+		map.forEach { (key, value) ->
+			writeArray {
+				pairTransformer(key, value).let {
+					it.first.writeTo(this)
+					it.second.writeTo(this)
+				}
+			}
+		}
+	}
+
+	/**
+	 * Write an [Iterator] of [Pair]s keyed by an arbitrary type to another
+	 * arbitrary type as a [JSONArray] of [JSONArray] pairs with the map keys as
+	 * the first element in the [JSONArray] pair and the value as the second
+	 * element in the [JSONArray] pair transformed into [JSONFriendly] -
+	 * [JSONFriendly] pairs by the provided lambda.
+	 *
+	 * @param First
+	 *   The type of the [Map]'s key.
+	 * @param Second
+	 *   The type of the [Map]'s value.
+	 * @param pairs
+	 *   The [Iterator] of [Pair]s to serialize into this [JSONWriter].
+	 * @param pairTransformer
+	 *   Accepts the map key and the associated value and answers a [Pair] of
+	 *   [JSONFriendly] to [JSONFriendly] that are written in pair order to the
+	 *   [JSONArray] pair.
+	 */
+	fun <First, Second> writePairsAsArrayOfPairs (
+		pairs: Iterator<Pair<First, Second>>,
+		pairTransformer: (First, Second) -> Pair<JSONFriendly, JSONFriendly>
+	) = writeArray {
+		pairs.forEach { (key, value) ->
+			listOf<String>().map {  }
+			writeArray {
+				pairTransformer(key, value).let {
+					it.first.writeTo(this)
+					it.second.writeTo(this)
+				}
+			}
+		}
+	}
 
 	/**
 	 * Write the given non-null [String] as the name of an entity, then

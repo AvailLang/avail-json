@@ -524,7 +524,18 @@ class JSONObject internal constructor(
 	override fun iterator(): Iterator<Entry<String, JSONData>> =
 		map.entries.iterator()
 
-	override fun writeTo(writer: JSONWriter) =
+	/**
+	 * Transform the fields of this [JSONObject] into a [Map] with the keys
+	 * of the map being the transformed keys of this [JSONObject] and the values
+	 * of the map being the corresponding transformed values of this
+	 * [JSONObject].
+	 */
+	@Suppress("MemberVisibilityCanBePrivate")
+	fun <K, V> map (
+		transform: (String, JSONData) -> Pair<K, V>
+	): Map<K, V> = this.associate { (s, v) -> transform(s, v) }
+
+		override fun writeTo(writer: JSONWriter) =
 		writer.writeObject {
 			map.forEach { (key, value) ->
 				at(key) { value.writeTo(writer) }

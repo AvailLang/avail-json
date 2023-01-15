@@ -68,6 +68,7 @@ fun jsonPrettyPrintWriter (writerAction: JSONWriter.() -> Unit): JSONWriter =
  * @return
  *   A [JSONData].
  */
+@Suppress("unused")
 fun jsonData (
 	reader: Reader,
 	dataAction: JSONData.() -> Unit ={}
@@ -84,6 +85,7 @@ fun jsonData (
  * @return
  *   A [JSONObject].
  */
+@Suppress("unused")
 fun jsonObject (
 	reader: Reader,
 	objectAction: JSONObject.() -> Unit = {}
@@ -101,6 +103,7 @@ fun jsonObject (
  * @return
  *   A [JSONObject].
  */
+@Suppress("unused")
 fun jsonObject (
 	raw: String,
 	objectAction: JSONObject.() -> Unit = {}
@@ -117,6 +120,7 @@ fun jsonObject (
  * @return
  *   A [JSONArray].
  */
+@Suppress("unused")
 fun jsonArray (raw: String, arrayAction: JSONArray.() -> Unit): JSONArray =
 	(JSONReader(StringReader(raw)).read() as JSONArray).apply(arrayAction)
 
@@ -130,6 +134,7 @@ fun jsonArray (raw: String, arrayAction: JSONArray.() -> Unit): JSONArray =
  * @return
  *   A [JSONArray].
  */
+@Suppress("unused")
 fun jsonArray (reader: Reader, arrayAction: JSONArray.() -> Unit): JSONArray =
 	(JSONReader(reader).read() as JSONArray).apply(arrayAction)
 
@@ -143,8 +148,161 @@ fun jsonArray (reader: Reader, arrayAction: JSONArray.() -> Unit): JSONArray =
  * @return
  *   A [JSONReader].
  */
+@Suppress("unused")
 fun jsonReader (
 	raw: String,
 	readerAction: JSONReader.() -> Unit = {}
 ): JSONReader =
 	JSONReader(StringReader(raw)).apply(readerAction)
+
+/**
+ * Answer a [JSONReader] that has had the provided [readerAction] applied to it.
+ *
+ * @param reader
+ *   The [Reader] that contains the JSON content.
+ * @param readerAction
+ *   A lambda that accepts the created and returned [JSONReader].
+ * @return
+ *   A [JSONReader].
+ */
+@Suppress("unused")
+fun jsonReader (
+	reader: Reader,
+	readerAction: JSONReader.() -> Unit = {}
+): JSONReader =
+	JSONReader(reader).apply(readerAction)
+
+////////////////////////////////////////////////////////////////////////////////
+//                          Type Extensions/Functions                         //
+////////////////////////////////////////////////////////////////////////////////
+
+/** [Float] wrapped in a [JSONData]. */
+val Float.json: JSONData get() = JSONNumber(this)
+
+/** Nullable [Float] wrapped in a [JSONData]. */
+val Float?.json: JSONData get() = this?.let { JSONNumber(this) }?: JSONNull
+
+/** 
+ * Wrap an [Iterator] of [Float] wrapped in a [JSONArray].
+ * 
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun floatJSONArray (iterator: Iterator<Float>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+/** [Double] wrapped in a [JSONData]. */
+val Double.json: JSONData get() = JSONNumber(this)
+
+/** Nullable [Double] wrapped in a [JSONData]. */
+val Double?.json: JSONData get() = this?.let { JSONNumber(this) }?: JSONNull
+
+/**
+ * Wrap an [Iterator] of [Double] wrapped in a [JSONArray].
+ *
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun doubleJSONArray (iterator: Iterator<Double>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+/** [Int] wrapped in a [JSONData]. */
+val Int.json: JSONData get() = JSONNumber(this)
+
+/** Nullable [Int] wrapped in a [JSONData]. */
+val Int?.json: JSONData get() = this?.let { JSONNumber(this) }?: JSONNull
+
+/**
+ * Wrap an [Iterator] of [Int] wrapped in a [JSONArray].
+ *
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun intJSONArray (iterator: Iterator<Int>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+/** [Long] wrapped in a [JSONData]. */
+val Long.json: JSONData get() = JSONNumber(this)
+
+/** Nullable [Long] wrapped in a [JSONData]. */
+val Long?.json: JSONData get() = this?.let { JSONNumber(this) }?: JSONNull
+
+/**
+ * Wrap an [Iterator] of [Long] wrapped in a [JSONArray].
+ *
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun longJSONArray (iterator: Iterator<Long>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+/** [String] wrapped in a [JSONData]. */
+val String.json: JSONData get() = JSONValue(this)
+
+/** Nullable [String] wrapped in a [JSONData]. */
+@Suppress("unused")
+val String?.jsonNullable: JSONData get() =
+	this?.let { JSONValue(this) }?: JSONNull
+
+/**
+ * Wrap an [Iterator] of [String] wrapped in a [JSONArray].
+ *
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun stringJSONArray (iterator: Iterator<String>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+/** [Boolean] wrapped in a [JSONData]. */
+val Boolean.json: JSONData get() = JSONValue(this)
+
+/** Nullable [Boolean] wrapped in a [JSONData]. */
+val Boolean?.json: JSONData get() =
+	this?.let { JSONValue(this) }?: JSONNull
+
+/**
+ * Wrap an [Iterator] of [Boolean] wrapped in a [JSONArray].
+ *
+ * @param iterator
+ *   The [Iterator] to wrap.
+ * @return
+ *   The [JSONArray].
+ */
+@Suppress("unused")
+fun booleanJSONArray (iterator: Iterator<Boolean>): JSONArray =
+	JSONArray(mutableListOf<JSONData>().let {
+		iterator.forEach { v -> it.add(v.json) }
+		it
+	}.toTypedArray())
+
+
