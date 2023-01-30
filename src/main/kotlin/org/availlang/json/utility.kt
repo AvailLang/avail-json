@@ -43,8 +43,9 @@ import java.io.StringReader
  * @return
  *   A [JSONWriter].
  */
-fun jsonWriter (writerAction: JSONWriter.() -> Unit): JSONWriter =
-	JSONWriter.newWriter().apply(writerAction)
+fun jsonWriter (
+	writerAction: JSONWriter.() -> Unit = {}
+): JSONWriter = JSONWriter.newWriter().apply(writerAction)
 
 /**
  * Answer a pretty-print [JSONWriter] that has had the provided [writerAction]
@@ -55,8 +56,9 @@ fun jsonWriter (writerAction: JSONWriter.() -> Unit): JSONWriter =
  * @return
  *   A [JSONWriter].
  */
-fun jsonPrettyPrintWriter (writerAction: JSONWriter.() -> Unit): JSONWriter =
-	JSONWriter.newPrettyPrinterWriter().apply(writerAction)
+fun jsonPrettyPrintWriter (
+	writerAction: JSONWriter.() -> Unit = {}
+): JSONWriter = JSONWriter.newPrettyPrinterWriter().apply(writerAction)
 
 /**
  * Answer a [JSONData] that has had the provided [dataAction] applied to it.
@@ -72,8 +74,7 @@ fun jsonPrettyPrintWriter (writerAction: JSONWriter.() -> Unit): JSONWriter =
 fun jsonData (
 	reader: Reader,
 	dataAction: JSONData.() -> Unit ={}
-): JSONData =
-	JSONReader(reader).read().apply(dataAction)
+): JSONData = JSONReader(reader).read().apply(dataAction)
 
 /**
  * Answer a [JSONObject] that has had the provided [objectAction] applied to it.
@@ -89,8 +90,7 @@ fun jsonData (
 fun jsonObject (
 	reader: Reader,
 	objectAction: JSONObject.() -> Unit = {}
-): JSONObject =
-	(JSONReader(reader).read() as JSONObject).apply(objectAction)
+): JSONObject = (JSONReader(reader).read() as JSONObject).apply(objectAction)
 
 
 /**
@@ -121,7 +121,10 @@ fun jsonObject (
  *   A [JSONArray].
  */
 @Suppress("unused")
-fun jsonArray (raw: String, arrayAction: JSONArray.() -> Unit): JSONArray =
+fun jsonArray (
+	raw: String,
+	arrayAction: JSONArray.() -> Unit = {}
+): JSONArray =
 	(JSONReader(StringReader(raw)).read() as JSONArray).apply(arrayAction)
 
 /**
@@ -135,8 +138,10 @@ fun jsonArray (raw: String, arrayAction: JSONArray.() -> Unit): JSONArray =
  *   A [JSONArray].
  */
 @Suppress("unused")
-fun jsonArray (reader: Reader, arrayAction: JSONArray.() -> Unit): JSONArray =
-	(JSONReader(reader).read() as JSONArray).apply(arrayAction)
+fun jsonArray (
+	reader: Reader,
+	arrayAction: JSONArray.() -> Unit = {}
+): JSONArray = (JSONReader(reader).read() as JSONArray).apply(arrayAction)
 
 /**
  * Answer a [JSONReader] that has had the provided [readerAction] applied to it.
@@ -152,8 +157,7 @@ fun jsonArray (reader: Reader, arrayAction: JSONArray.() -> Unit): JSONArray =
 fun jsonReader (
 	raw: String,
 	readerAction: JSONReader.() -> Unit = {}
-): JSONReader =
-	JSONReader(StringReader(raw)).apply(readerAction)
+): JSONReader = JSONReader(StringReader(raw)).apply(readerAction)
 
 /**
  * Answer a [JSONReader] that has had the provided [readerAction] applied to it.
@@ -169,8 +173,7 @@ fun jsonReader (
 fun jsonReader (
 	reader: Reader,
 	readerAction: JSONReader.() -> Unit = {}
-): JSONReader =
-	JSONReader(reader).apply(readerAction)
+): JSONReader = JSONReader(reader).apply(readerAction)
 
 ////////////////////////////////////////////////////////////////////////////////
 //                          Type Extensions/Functions                         //

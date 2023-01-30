@@ -60,7 +60,7 @@ kotlin {
 }
 
 group = "org.availlang"
-version = "2.1.0"
+version = "2.1.1"
 description = "A flexible JSON building and reading utility"
 
 val isReleaseVersion =

@@ -401,6 +401,7 @@ class JSONReader @Throws(IllegalArgumentException::class) constructor(
 	private fun readArray(): JSONArray
 	{
 		peekFor('['.code, null)
+		skipWhitespace()
 		if (peekFor(']'.code, null))
 		{
 			return JSONArray.empty()
