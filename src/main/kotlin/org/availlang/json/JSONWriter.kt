@@ -45,7 +45,7 @@ import java.util.Formatter
 import java.util.LinkedList
 
 /**
- * A stateful JSON writer that produces ASCII-only documents that adhere 
+ * A stateful JSON writer that produces ASCII-only documents that adhere
  * strictly to ECMA 404: "The JSON Data Interchange Format".
  *
  * @author Todd L Smith &lt;todd@availlang.org&gt;
@@ -359,14 +359,7 @@ open class JSONWriter constructor(
 
 			@Throws(JSONIOException::class)
 			override fun writePrologueTo(writer: JSONWriter) =
-				if (writer.prettyPrint)
-				{
-					writer.privateWrite(", ")
-				}
-				else
-				{
-					writer.privateWrite(',')
-				}
+				writer.privateWrite(',')
 
 			override val newlineBeforeWrite: Boolean = true
 
@@ -1329,8 +1322,8 @@ open class JSONWriter constructor(
 		}
 
 	/**
-	 * Write a String to [Iterable] of [JSONFriendly] [Map] as a [JSONObject] 
-	 * with the map keys as the [JSONObject] keys and the corresponding map 
+	 * Write a String to [Iterable] of [JSONFriendly] [Map] as a [JSONObject]
+	 * with the map keys as the [JSONObject] keys and the corresponding map
 	 * values as the [JSONObject] [JSONArray] field values.
 	 *
 	 * @param map
@@ -1407,7 +1400,7 @@ open class JSONWriter constructor(
 				writeInts(value)
 			}
 		}
-	
+
 	/**
 	 * Write a String to [Long] [Map] as a [JSONObject] with the map
 	 * keys as the [JSONObject] keys and the corresponding map values as the
@@ -1503,7 +1496,7 @@ open class JSONWriter constructor(
 				writeFloats(value)
 			}
 		}
-	
+
 	/**
 	 * Write a String to [String] [Map] as a [JSONObject] with the map
 	 * keys as the [JSONObject] keys and the corresponding map values as the
@@ -1756,5 +1749,27 @@ open class JSONWriter constructor(
 		 */
 		fun newPrettyPrinterWriter(): JSONWriter =
 			JSONWriter(prettyPrint = true)
+
+		/**
+		 * Create a [JSONWriter], use it as the receiver for the action, then
+		 * produce and answer a [String] from the writer.  Use the [prettyPrint]
+		 * flag if present, defaulting to false.
+		 *
+		 * @param prettyPrint
+		 *   Whether the string being produced should be in a human-readable
+		 *   form.  Defaults to false.
+		 * @param action
+		 *   A function taking a [JSONWriter] as the receiver, with the intent
+		 *   of writing a JSON object to it.
+		 * @return
+		 *   The textual form of the JSON object that was written by the
+		 *   [action], in human-readable form if [prettyPrint] is specified and
+		 *   true.
+		 */
+		fun jsonString(
+			prettyPrint: Boolean = false,
+			action: JSONWriter.()->Unit
+		): String =
+			JSONWriter(prettyPrint = prettyPrint).also(action).toString()
 	}
 }
