@@ -41,6 +41,7 @@ import org.availlang.json.JSONException
 import org.availlang.json.JSONObject
 import org.availlang.json.JSONReader
 import org.availlang.json.JSONWriter
+import org.availlang.json.JSONWriter.Companion.jsonString
 import org.availlang.json.json
 import org.availlang.json.test.TestJSONKeyValue.Companion.addObjectToWriter
 import org.availlang.json.test.TestJSONKeyValue.Companion.addToWriter
@@ -238,7 +239,39 @@ class JSONWriterTest
 			writeInts(listOf(11,12,15))
 			writePairsAsArrayOfPairs(i1) { f, s -> f.json to s.json }
 		}
-		val expected = "[{\"a\":5,\"b\":10},{\"a\":[5,2],\"b\":[25,22]},{\"a\":true,\"b\":false},{\"a\":[false,true],\"b\":[false,true]},\"foo\",\"foo\",[11,12,15],[[\"a\",99],[\"b\",88]]]"
+		val expected = """[{"a":5,"b":10},{"a":[5,2],"b":[25,22]},{"a":true,"b":false},{"a":[false,true],"b":[false,true]},"foo","foo",[11,12,15],[["a",99],["b",88]]]"""
 		assertEquals(expected, writer.toString())
+	}
+
+	/**
+	 * Test the jsonString() static function.
+	 */
+	@Test
+	internal fun testJsonString()
+	{
+		val actual = jsonString {
+			writeMapInt(mapOf("a" to 5, "b" to 10, "c" to 20))
+		}
+		val expected = """{"a":5,"b":10,"c":20}"""
+		assertEquals(expected, actual)
+	}
+
+	/**
+	 * Test the jsonString() static function with pretty-printing.
+ 	 */
+	@Test
+	internal fun testPrettyJsonString()
+	{
+		val actual = jsonString(true) {
+			writeMapInt(mapOf("a" to 5, "b" to 10, "c" to 20))
+		}
+		val expected = """
+			{
+				"a": 5,
+				"b": 10,
+				"c": 20
+			}
+			""".trimIndent()
+		assertEquals(expected, actual)
 	}
 }
