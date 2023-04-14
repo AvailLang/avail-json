@@ -193,8 +193,8 @@ publishing {
             println("Publishing snapshot: $isReleaseVersion")
             println("Publishing URL: $url")
             credentials {
-                username = System.getenv("OSSRH_USER")
-                password = System.getenv("OSSRH_PASSWORD")
+                username = ossrhUsername
+                password = ossrhPassword
             }
         }
     }
